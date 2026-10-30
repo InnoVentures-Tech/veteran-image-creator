@@ -13,6 +13,8 @@ export type ScalarField =
   | { key: string; label: string; type: "text"; default: string; placeholder?: string; maxLength?: number }
   | { key: string; label: string; type: "textarea"; default: string; placeholder?: string; maxLength?: number }
   | { key: string; label: string; type: "select"; default: string; options: { value: string; label: string }[] }
+  /** Takvimden tarih seçimi; değer "YYYY-AA-GG", görselde formatDate ile yazılır */
+  | { key: string; label: string; type: "date"; default: string }
   /** Seçenekler radyo düğmesi olarak yan yana gösterilir (az seçenekli, sık değişen alanlar için) */
   | { key: string; label: string; type: "radio"; default: string; options: { value: string; label: string }[] }
   /** Kullanıcının bilgisayarından seçtiği görsel (data URL olarak tutulur, sunucuya gönderilmez) */
@@ -154,6 +156,20 @@ const ensureTemplateFonts = (fonts: ImageTemplate["fonts"]) => {
 };
 
 export const upper = (text: string) => text.toLocaleUpperCase("tr-TR");
+
+/** Bugünün tarihi "YYYY-AA-GG" (date alanlarının varsayılanı) */
+export const todayIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+/** "2026-10-18" -> "18 Ekim 2026"; tarih biçiminde değilse (eski kayıtlar) olduğu gibi döner */
+export const formatDate = (value: string | undefined) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((value ?? "").trim());
+  if (!m) return (value ?? "").trim();
+  const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return date.toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+};
 
 // Büyük harf yüksekliği / punto oranı fonta bağlıdır; "H" ölçülerek bulunur.
 export const sizeForCap = (ctx: CanvasRenderingContext2D, fontAt: (size: number) => string, cap: number) => {

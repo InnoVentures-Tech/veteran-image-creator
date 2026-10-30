@@ -15,6 +15,8 @@ const BACKGROUNDS = [
   { value: "etem-inci", label: "Etem İnci - Beyaz Forma" },
   { value: "ali-turk", label: "Ali Türk - Beyaz Forma" },
   { value: "mustafa-karaca", label: "Mustafa Karaca - Beyaz Forma" },
+  { value: "emrullah", label: "Emrullah - Mavi Forma" },
+  { value: "ilker", label: "İlker - Mavi Forma" },
 ];
 const bgSrc = (key: string) => `/images/veteran-ilk-11-${key}.webp`;
 

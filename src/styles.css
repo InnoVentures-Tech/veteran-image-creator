@@ -303,11 +303,71 @@ textarea:focus {
   display: none;
 }
 
-.image-input {
+.dropzone {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 14px;
+  padding: 14px;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+}
+.dropzone:hover,
+.dropzone.over,
+.dropzone:focus-within {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.dropzone.filled {
+  border-style: solid;
+  background: #fff;
+}
+.drop-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--blue);
+  box-shadow: 0 1px 3px rgba(8, 18, 44, 0.12);
+}
+.thumb {
+  width: 44px;
+  height: 55px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px rgba(8, 18, 44, 0.2);
+}
+.drop-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+.drop-text strong {
+  color: var(--blue);
+  font-weight: 800;
+}
+.drop-text span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .list {

@@ -15,6 +15,8 @@ const BACKGROUNDS = [
   { value: "aydin", label: "Aydın - Mavi Forma" },
   { value: "alper", label: "Alper - Mavi Forma" },
   { value: "huseyin", label: "Hüseyin - Beyaz Forma" },
+  { value: "emrullah", label: "Emrullah - Mavi Forma" },
+  { value: "ilker", label: "İlker - Mavi Forma" },
 ];
 const bgSrc = (key: string) => `/images/veteran-kamp-${key}.webp`;
 
@@ -32,6 +34,7 @@ const nameFont = font(800);
 /** Tasarımdaki yazı Figtree'den dar: tüm metinler yatayda bu oranda daraltılır */
 const SQUEEZE = 0.9;
 
+const LEAGUE = "TMVFL BATI KARADENİZ BÖLGESİ";
 const HEADER = { x: 654, baseline: 67, cap: 22, maxWidth: 1500 - 654 };
 /** Oyuncu listesi iki sütun: sol sütun ilk yarı; satırlar 55 px aralıkla iner, adların büyük harf üstü 1041'de başlar */
 const LIST = { top: 1041, pitch: 55.1, maxBottom: 1640, nameCap: 32, numCap: 24, gkCap: 21, gkGap: 10 };
@@ -97,7 +100,7 @@ export const veteranKampKadrosu: ImageTemplate = {
     { key: "rakip", label: "Rakip", type: "select", default: OPPONENTS[0].value, options: OPPONENTS },
     { key: "evDeplasman", label: "Karabük Akademi", type: "radio", default: "home", options: VENUES },
     { key: "logoStili", label: "Logolar", type: "radio", default: "renkli", options: LOGO_STYLES },
-    { key: "hafta", label: "Hafta", type: "text", default: "TMVFL BATI KARADENİZ BÖLGESİ 1. HAFTA", maxLength: 60 },
+    { key: "hafta", label: "Hafta", type: "text", default: "1", placeholder: "4", maxLength: 3 },
     { key: "tarih", label: "Tarih ve saat", type: "text", default: "11.10.2026  15:00", placeholder: "11.10.2026  15:00", maxLength: 24 },
     { key: "saha", label: "Saha", type: "text", default: "Karabük 5000 Evler Futbol Sahası", maxLength: 50 },
     { key: "teknikDirektor", label: "Teknik direktör", type: "text", default: "Coşkun Uzunçelebi", maxLength: 32 },
@@ -137,7 +140,9 @@ export const veteranKampKadrosu: ImageTemplate = {
     }
 
     ctx.fillStyle = "#FFFFFF";
-    const week = (v.hafta ?? "").trim();
+    // Yalnızca hafta numarası girilir; eski kayıtlardaki "… 1. HAFTA" metninden de numara alınır
+    const weekNo = (v.hafta ?? "").match(/\d+/)?.[0];
+    const week = weekNo ? `${LEAGUE} ${weekNo}. HAFTA` : "";
     if (week) drawText(ctx, week, HEADER.x, HEADER.baseline, lightFont, HEADER.cap, "left", HEADER.maxWidth);
     const date = (v.tarih ?? "").trim();
     if (date) drawText(ctx, date, FOOTER.dateX, FOOTER.baseline, lightFont, FOOTER.cap);

@@ -1,4 +1,4 @@
-import { drawContain, drawCover, upper, sizeForCap, type ImageTemplate } from "./engine";
+import { drawContain, drawCover, formatDate, todayIso, upper, sizeForCap, type ImageTemplate } from "./engine";
 import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 
 // Karabük Akademi Veteranlar için Maç Günü.
@@ -66,7 +66,7 @@ export const veteranMacGunu: ImageTemplate = {
     { key: "rakip", label: "Rakip", type: "select", default: OPPONENTS[0].value, options: OPPONENTS },
     { key: "evDeplasman", label: "Karabük Akademi", type: "radio", default: "home", options: VENUES },
     { key: "logoStili", label: "Logolar", type: "radio", default: "renkli", options: LOGO_STYLES },
-    { key: "tarih", label: "Tarih", type: "text", default: "18 Ekim 2026", placeholder: "18 Ekim 2026", maxLength: 24 },
+    { key: "tarih", label: "Tarih", type: "date", default: todayIso() },
     { key: "saat", label: "Saat", type: "text", default: "20:30", placeholder: "20:30", maxLength: 5 },
     {
       key: "saha",
@@ -97,7 +97,7 @@ export const veteranMacGunu: ImageTemplate = {
     }
 
     ctx.fillStyle = "#FFFFFF";
-    const when = [v.tarih, v.saat].map((s) => (s ?? "").trim()).filter(Boolean).join(" - ");
+    const when = [formatDate(v.tarih), v.saat].map((s) => (s ?? "").trim()).filter(Boolean).join(" - ");
     if (when) drawLine(ctx, upper(when), DATE.x, DATE.baseline, dateFont, DATE.cap, DATE.maxWidth, DATE.spacing);
     const venue = upper((v.saha ?? "").trim());
     if (venue) drawLine(ctx, venue, VENUE.x, VENUE.baseline, venueFont, VENUE.cap, VENUE.maxWidth, VENUE.spacing);

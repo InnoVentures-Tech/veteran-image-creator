@@ -55,6 +55,8 @@ const initialData = () => {
       for (const f of t.fields)
         if ((f.type === "select" || f.type === "radio") && !f.options.some((o) => o.value === values[f.key]))
           values[f.key] = base.values[f.key];
+        // Tarih alanı önceden serbest metindi ("18 Ekim 2026"); takvimde gösterilemeyen değer bugüne döner
+        else if (f.type === "date" && !/^\d{4}-\d{2}-\d{2}$/.test(values[f.key] ?? "")) values[f.key] = base.values[f.key];
       return [t.id, { values, lists: { ...base.lists, ...s.lists } }];
     }),
   );
@@ -82,6 +84,67 @@ const readFile = (file: File) =>
     reader.readAsDataURL(file);
   });
 
+/** Fotoğraf alanı: tıklanıp seçilen ya da sürüklenip bırakılan görsel; seçiliyse küçük önizleme gösterilir */
+const ImageInput = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => {
+  const [dragging, setDragging] = useState(false);
+  const take = async (file: File | undefined) => {
+    if (file?.type.startsWith("image/")) onChange(await readFile(file));
+  };
+  return (
+    <div
+      className={`dropzone${dragging ? " over" : ""}${value ? " filled" : ""}`}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        void take(e.dataTransfer.files[0]);
+      }}
+    >
+      {/* Alan bir <label> içinde: kutunun herhangi bir yerine tıklamak dosya seçiciyi açar */}
+      <input
+        type="file"
+        accept="image/*"
+        className="visually-hidden"
+        onChange={async (e) => {
+          await take(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      {value ? (
+        <img className="thumb" src={value} alt="" />
+      ) : (
+        <span className="drop-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="m21 15-5-5L5 21" />
+          </svg>
+        </span>
+      )}
+      <span className="drop-text">
+        <strong>{value ? "Fotoğrafı değiştir" : "Fotoğraf seç"}</strong>
+        <span>{value ? "Tıklayın ya da yenisini sürükleyip bırakın" : "Tıklayın ya da sürükleyip bırakın · JPG, PNG, WEBP"}</span>
+      </span>
+      {value && (
+        <button
+          type="button"
+          className="link danger"
+          onClick={(e) => {
+            e.preventDefault();
+            onChange("");
+          }}
+        >
+          Kaldır
+        </button>
+      )}
+    </div>
+  );
+};
+
 const ScalarInput = ({ field, value, onChange }: { field: Scalar; value: string; onChange: (v: string) => void }) => {
   switch (field.type) {
     case "text":
@@ -93,6 +156,8 @@ const ScalarInput = ({ field, value, onChange }: { field: Scalar; value: string;
           onChange={(e) => onChange(e.target.value)}
         />
       );
+    case "date":
+      return <input type="date" value={value} onChange={(e) => onChange(e.target.value)} />;
     case "textarea":
       return (
         <textarea
@@ -119,24 +184,7 @@ const ScalarInput = ({ field, value, onChange }: { field: Scalar; value: string;
         </div>
       );
     case "image":
-      return (
-        <div className="image-input">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (file) onChange(await readFile(file));
-              e.target.value = "";
-            }}
-          />
-          {value && (
-            <button type="button" className="link" onClick={() => onChange("")}>
-              Kaldır
-            </button>
-          )}
-        </div>
-      );
+      return <ImageInput value={value} onChange={onChange} />;
     default:
       return <p className="hint">Bu alan türü burada desteklenmiyor.</p>;
   }

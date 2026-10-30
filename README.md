@@ -1,23 +1,23 @@
-# Veteran Görsel Oluşturucu
+# Veteran Image Creator
 
-Karabük Akademi Veteranlar için sosyal medya görselleri (1600×2000 JPEG): **İlk 11**, **Kamp Kadrosu**, **Maç Günü**, **Maç Sonucu**.
-Her şey tarayıcıda çizilir; yüklenen fotoğraflar hiçbir sunucuya gönderilmez.
+Social media images (1600×2000 JPEG) for Karabük Akademi Veterans: **Starting XI** (İlk 11), **Camp Squad** (Kamp Kadrosu), **Match Day** (Maç Günü) and **Match Result** (Maç Sonucu).
+Everything is drawn in the browser; uploaded photos are never sent to a server.
 
-## Geliştirme
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Yapı
+## Structure
 
-- `src/studio/engine.ts`: çizim altyapısı ve şablon/alan tipleri
-- `src/studio/veteran-*.ts`: şablonlar; yeni şablon `src/templates.ts` listesine eklenir
-- `src/studio/veteran-kadro.ts`: takım kadrosu (forma numarası, ad, kaleci); kadro değişince yalnızca burası güncellenir
-- `src/studio/veteran-logos.ts`: rakip takımlar ve logoları
-- `public/images/`: arka planlar ve çerçeveler; takım logoları `public/images/logos/` altında renkli (`<takım>.webp`) ve beyaz (`<takım>-beyaz.webp`)
+- `src/studio/engine.ts`: drawing engine plus template and field types
+- `src/studio/veteran-*.ts`: templates; a new template is added to the list in `src/templates.ts`
+- `src/studio/veteran-kadro.ts`: team roster (shirt number, name, goalkeeper); when the squad changes, only this file is updated
+- `src/studio/veteran-logos.ts`: opponent teams and their logos
+- `public/images/`: backgrounds and frames; team logos live in `public/images/logos/` in colour (`<team>.webp`) and white (`<team>-beyaz.webp`) versions
 
-## Yayın
+## Deployment
 
-`main` dalına yapılan her push, GitHub Actions ile GitHub Pages'e yayınlanır (`.github/workflows/deploy.yml`).
+Every push to `main` is published to GitHub Pages by GitHub Actions (`.github/workflows/deploy.yml`).
