@@ -276,6 +276,19 @@ export const App = () => {
           </button>
         ))}
       </nav>
+      {/* Telefonda sekmeler sığmadığı için şablon açılır listeden seçilir */}
+      <select
+        className="template-select"
+        aria-label="Şablon"
+        value={template.id}
+        onChange={(e) => setTemplateId(e.target.value)}
+      >
+        {TEMPLATES.map((t) => (
+          <option key={t.id} value={t.id}>
+            {t.name}
+          </option>
+        ))}
+      </select>
 
       <main>
         <section className="form">

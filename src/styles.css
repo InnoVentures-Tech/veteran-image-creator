@@ -105,6 +105,21 @@ nav button.on {
   color: #fff;
 }
 
+.template-select {
+  display: none;
+}
+@media (max-width: 640px) {
+  nav {
+    display: none;
+  }
+  .template-select {
+    display: block;
+    font-weight: 800;
+    color: var(--blue);
+    padding: 11px 12px;
+  }
+}
+
 main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -1,20 +1,24 @@
 import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, type ImageTemplate, type Row } from "./engine";
 import { sizeForCap } from "./kamp-kadrosu";
+import { LOGO_STYLES, OPPONENTS, OUR_TEAM, logoSrc } from "./veteran-logos";
 
 // Karabük Akademi Veteranlar için Kamp Kadrosu (Safranboluspor dışı, yalnızca superadmin görür).
 // Arka planlar hazır tasarımdan yazılar ve logolar silinerek alınmıştır; "KAMP" başlığı ve köşe çizgileri görselin içindedir.
-// Ölçüler ve renkler o tasarımdan (1500x2000, canvas'a 1600x2000 kırpılarak) ölçülmüştür.
+// Ölçüler ve renkler o tasarımdan (1500x2000, canvas'a 1600x2000 kırpılarak) ölçülmüştür. Tüm arka planlar aynı
+// boş zeminden üretilir (oyuncu fotoğrafı dekupe edilip sola yerleştirilir), bu yüzden yerleşim ortaktır.
 
 const NUMBER_BLUE = "#4F95EE";
 const GK_GRAY = "#A9B1BD";
 
 /** Arka plan seçenekleri: yeni oyuncu fotoğrafı geldiğinde buraya eklenir */
-const BACKGROUNDS = [{ value: "cahit-berkay", label: "C.Berkay - Mavi Forma" }];
+const BACKGROUNDS = [
+  { value: "aydin", label: "Aydın - Mavi Forma" },
+  { value: "alper", label: "Alper - Mavi Forma" },
+  { value: "huseyin", label: "Hüseyin - Beyaz Forma" },
+];
 const bgSrc = (key: string) => `/images/design/berkay-ozel/veteran-kamp-${key}.webp`;
 
 /** Logolar: üstte bizim, altta rakip; sol üstteki köşe çizgilerinin içinde ortalanır */
-const OPPONENTS = [{ value: "safranbolu-masterler", label: "Safranbolu Masterler" }];
-const logoSrc = (key: string) => `/images/design/berkay-ozel/logos/${key}.webp`;
 const LOGOS = { cx: 183, ourCy: 280, opponentCy: 444, height: 100, maxWidth: 140 };
 
 const FAMILY = '"Figtree", "Nunito Sans", Arial, sans-serif';
@@ -93,10 +97,10 @@ export const veteranKampKadrosu: ImageTemplate = {
   id: "veteran-kamp-kadrosu",
   name: "Kamp Kadrosu",
   description: "Karabük Akademi Veteranlar kamp kadrosu; oyuncular elle girilir, görselde forma numarasına göre sıralanır.",
-  staticImages: { ourLogo: logoSrc("karabuk-akademi-veteranlar") },
   dynamicImages: ({ values }) => ({
     background: bgSrc(values.arkaPlan || BACKGROUNDS[0].value),
-    ...(values.rakip ? { opponentLogo: logoSrc(values.rakip) } : {}),
+    ourLogo: logoSrc(OUR_TEAM, values.logoStili),
+    ...(values.rakip ? { opponentLogo: logoSrc(values.rakip, values.logoStili) } : {}),
   }),
   fonts: {
     stylesheet: "https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;800&display=swap",
@@ -104,7 +108,8 @@ export const veteranKampKadrosu: ImageTemplate = {
   },
   fields: [
     { key: "arkaPlan", label: "Arka plan", type: "select", default: BACKGROUNDS[0].value, options: BACKGROUNDS },
-    { key: "rakip", label: "Rakip logosu", type: "select", default: OPPONENTS[0].value, options: OPPONENTS },
+    { key: "rakip", label: "Rakip", type: "select", default: OPPONENTS[0].value, options: OPPONENTS },
+    { key: "logoStili", label: "Logolar", type: "radio", default: "renkli", options: LOGO_STYLES },
     { key: "hafta", label: "Hafta", type: "text", default: "TMVFL BATI KARADENİZ BÖLGESİ 1. HAFTA", maxLength: 60 },
     { key: "tarih", label: "Tarih ve saat", type: "text", default: "11.10.2026  15:00", placeholder: "11.10.2026  15:00", maxLength: 24 },
     { key: "saha", label: "Saha", type: "text", default: "Karabük 5000 Evler Futbol Sahası", maxLength: 50 },
