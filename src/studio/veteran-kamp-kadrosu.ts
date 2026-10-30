@@ -1,6 +1,6 @@
 import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, type ImageTemplate, type Row } from "./engine";
 import { sizeForCap } from "./kamp-kadrosu";
-import { LOGO_STYLES, OPPONENTS, OUR_TEAM, logoSrc } from "./veteran-logos";
+import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 
 // Karabük Akademi Veteranlar için Kamp Kadrosu (Safranboluspor dışı, yalnızca superadmin görür).
 // Arka planlar hazır tasarımdan yazılar ve logolar silinerek alınmıştır; "KAMP" başlığı ve köşe çizgileri görselin içindedir.
@@ -18,8 +18,11 @@ const BACKGROUNDS = [
 ];
 const bgSrc = (key: string) => `/images/design/berkay-ozel/veteran-kamp-${key}.webp`;
 
-/** Logolar: üstte bizim, altta rakip; sol üstteki köşe çizgilerinin içinde ortalanır */
-const LOGOS = { cx: 183, ourCy: 280, opponentCy: 444, height: 100, maxWidth: 140 };
+/**
+ * Logolar sol üstteki köşe çizgilerinin (x 92–272, y 190–529) içinde: üstte ev sahibi, altta misafir.
+ * Her logo kutu yüksekliğinin ~%42'si kadar, genişliğe sığdırılarak çizilir.
+ */
+const LOGOS = { cx: 182, homeCy: 280, awayCy: 440, height: 142, maxWidth: 146 };
 
 const FAMILY = '"Figtree", "Nunito Sans", Arial, sans-serif';
 const font = (weight: number) => (size: number) => `${weight} ${size}px ${FAMILY}`;
@@ -99,8 +102,11 @@ export const veteranKampKadrosu: ImageTemplate = {
   description: "Karabük Akademi Veteranlar kamp kadrosu; oyuncular elle girilir, görselde forma numarasına göre sıralanır.",
   dynamicImages: ({ values }) => ({
     background: bgSrc(values.arkaPlan || BACKGROUNDS[0].value),
-    ourLogo: logoSrc(OUR_TEAM, values.logoStili),
-    ...(values.rakip ? { opponentLogo: logoSrc(values.rakip, values.logoStili) } : {}),
+    ...Object.fromEntries(
+      homeAway(values.evDeplasman, values.rakip).flatMap((team, i) =>
+        team ? [[i === 0 ? "homeLogo" : "awayLogo", logoSrc(team, values.logoStili)]] : [],
+      ),
+    ),
   }),
   fonts: {
     stylesheet: "https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;800&display=swap",
@@ -109,6 +115,7 @@ export const veteranKampKadrosu: ImageTemplate = {
   fields: [
     { key: "arkaPlan", label: "Arka plan", type: "select", default: BACKGROUNDS[0].value, options: BACKGROUNDS },
     { key: "rakip", label: "Rakip", type: "select", default: OPPONENTS[0].value, options: OPPONENTS },
+    { key: "evDeplasman", label: "Karabük Akademi", type: "radio", default: "home", options: VENUES },
     { key: "logoStili", label: "Logolar", type: "radio", default: "renkli", options: LOGO_STYLES },
     { key: "hafta", label: "Hafta", type: "text", default: "TMVFL BATI KARADENİZ BÖLGESİ 1. HAFTA", maxLength: 60 },
     { key: "tarih", label: "Tarih ve saat", type: "text", default: "11.10.2026  15:00", placeholder: "11.10.2026  15:00", maxLength: 24 },
@@ -140,6 +147,7 @@ export const veteranKampKadrosu: ImageTemplate = {
     },
   ],
   fileLabel: ({ values }) => `veteran-kamp-${values.arkaPlan || ""}`,
+  inlineRows: [["evDeplasman", "logoStili"]],
   draw: (ctx, { values: v, lists }, { statics }) => {
     if (statics.background) drawCover(ctx, statics.background, 0, 0, W, H);
     else {
@@ -148,8 +156,8 @@ export const veteranKampKadrosu: ImageTemplate = {
     }
 
     for (const [img, cy] of [
-      [statics.ourLogo, LOGOS.ourCy],
-      [statics.opponentLogo, LOGOS.opponentCy],
+      [statics.homeLogo, LOGOS.homeCy],
+      [statics.awayLogo, LOGOS.awayCy],
     ] as const) {
       if (img) drawContain(ctx, img, LOGOS.cx - LOGOS.maxWidth / 2, cy - LOGOS.height / 2, LOGOS.maxWidth, LOGOS.height);
     }

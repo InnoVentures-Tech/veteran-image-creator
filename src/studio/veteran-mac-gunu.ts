@@ -1,6 +1,6 @@
 import { drawContain, drawCover, upper, type ImageTemplate } from "./engine";
 import { sizeForCap } from "./kamp-kadrosu";
-import { LOGO_STYLES, OPPONENTS, OUR_TEAM, logoSrc } from "./veteran-logos";
+import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 
 // Karabük Akademi Veteranlar için Maç Günü (Safranboluspor dışı, yalnızca superadmin görür).
 // Çerçeve hazır tasarımdan alınmıştır: "MAÇ GÜNÜ" yazısı görselin içindedir, fotoğraf alanı saydamdır,
@@ -14,10 +14,6 @@ const PHOTO = { x: 387, y: 186, w: 1214, h: 1632 };
 const LOGOS = [
   { key: "logoSol", x: 77, y: 1480, w: 130, h: 140 },
   { key: "logoSag", x: 213, y: 1480, w: 130, h: 140 },
-];
-const VENUES = [
-  { value: "home", label: "İç saha" },
-  { value: "away", label: "Deplasman" },
 ];
 const DATE = { x: 119, baseline: 1803, cap: 50, maxWidth: 880, spacing: 1.8 };
 const VENUE = { x: 119, baseline: 1865, cap: 34, maxWidth: 880, spacing: -0.8 };
@@ -56,7 +52,7 @@ export const veteranMacGunu: ImageTemplate = {
   description: "Karabük Akademi Veteranlar maç günü; fotoğraf, rakip, tarih, saat ve saha seçilir.",
   staticImages: { frame: FRAME },
   dynamicImages: ({ values: v }) => {
-    const [home, away] = v.evDeplasman === "away" ? [v.rakip, OUR_TEAM] : [OUR_TEAM, v.rakip];
+    const [home, away] = homeAway(v.evDeplasman, v.rakip);
     return {
       ...(home ? { logoSol: logoSrc(home, v.logoStili) } : {}),
       ...(away ? { logoSag: logoSrc(away, v.logoStili) } : {}),
@@ -69,7 +65,7 @@ export const veteranMacGunu: ImageTemplate = {
   fields: [
     { key: "fotograf", label: "Fotoğraf", type: "image", hint: "Sağdaki alanı kaplar; dikey bir maç fotoğrafı önerilir." },
     { key: "rakip", label: "Rakip", type: "select", default: OPPONENTS[0].value, options: OPPONENTS },
-    { key: "evDeplasman", label: "Maç", type: "radio", default: "home", options: VENUES },
+    { key: "evDeplasman", label: "Karabük Akademi", type: "radio", default: "home", options: VENUES },
     { key: "logoStili", label: "Logolar", type: "radio", default: "renkli", options: LOGO_STYLES },
     { key: "tarih", label: "Tarih", type: "text", default: "18 Ekim 2026", placeholder: "18 Ekim 2026", maxLength: 24 },
     { key: "saat", label: "Saat", type: "text", default: "20:30", placeholder: "20:30", maxLength: 5 },

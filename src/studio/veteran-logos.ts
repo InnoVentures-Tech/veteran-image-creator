@@ -19,6 +19,16 @@ export const OPPONENTS = [
   { value: "safranbolu-masterlar", label: "Safranbolu Masterlar" },
 ];
 
+/** Karabük Akademi ev sahibi mi misafir mi: logoların sırası buna göre belirlenir */
+export const VENUES = [
+  { value: "home", label: "Ev sahibi" },
+  { value: "away", label: "Misafir" },
+];
+
+/** [ev sahibi, misafir] takım anahtarları */
+export const homeAway = (venue: string | undefined, opponent: string | undefined) =>
+  venue === "away" ? [opponent, OUR_TEAM] : [OUR_TEAM, opponent];
+
 export const LOGO_STYLES = [
   { value: "renkli", label: "Renkli" },
   { value: "beyaz", label: "Beyaz" },
