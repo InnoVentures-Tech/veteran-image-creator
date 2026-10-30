@@ -12,6 +12,7 @@ import {
   type TemplateField,
 } from "./studio/engine";
 import { TEMPLATES } from "./templates";
+import { VeteranLineupEditor } from "./VeteranLineupEditor";
 
 type Scalar = Exclude<TemplateField, ListField>;
 
@@ -382,6 +383,10 @@ export const App = () => {
             if (field.type === "list")
               return (
                 <ListInput key={field.key} field={field} rows={data.lists[field.key] ?? []} onChange={(r) => setList(field.key, r)} />
+              );
+            if (field.type === "veteranLineup")
+              return (
+                <VeteranLineupEditor key={field.key} value={data.values[field.key] ?? ""} onChange={(v) => setValue(field.key, v)} />
               );
             // Etiket (<label>) içinde olursa boş alana tıklamak ilk düğmeyi (oyuncu çıkar) tetikler; bu yüzden div
             if (field.type === "players")

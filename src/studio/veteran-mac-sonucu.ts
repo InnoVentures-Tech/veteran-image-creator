@@ -21,7 +21,6 @@ const SCORERS = { top: 1883, bottom: 1975, step: 54, cap: 32, leftX: 568, rightX
 /** Tasarımdaki başlık ve gol yazıları Barlow Condensed'den dar: yatayda bu oranda daraltılır */
 const SQUEEZE = 0.68;
 
-const SCORE_OPTIONS = Array.from({ length: 16 }, (_, i) => ({ value: String(i), label: String(i) }));
 const VENUES = [
   { value: "home", label: "İç saha" },
   { value: "away", label: "Deplasman" },
@@ -95,8 +94,8 @@ export const veteranMacSonucu: ImageTemplate = {
     { key: "hafta", label: "Hafta", type: "text", default: "3", placeholder: "3", maxLength: 3 },
     { key: "rakip", label: "Rakip", type: "select", default: "muzekent", options: OPPONENTS },
     { key: "evDeplasman", label: "Maç", type: "radio", default: "home", options: VENUES },
-    { key: "evSkor", label: "Ev sahibi skoru", type: "select", default: "1", options: SCORE_OPTIONS },
-    { key: "depSkor", label: "Deplasman skoru", type: "select", default: "2", options: SCORE_OPTIONS },
+    { key: "evSkor", label: "Ev sahibi skoru", type: "text", default: "1", placeholder: "0", maxLength: 2 },
+    { key: "depSkor", label: "Deplasman skoru", type: "text", default: "2", placeholder: "0", maxLength: 2 },
     {
       key: "goller",
       label: "Gol atanlar",
@@ -120,6 +119,7 @@ export const veteranMacSonucu: ImageTemplate = {
   ],
   inlineRows: [
     ["lig", "hafta"],
+    ["rakip", "evDeplasman"],
     ["evSkor", "depSkor"],
   ],
   fileLabel: ({ values: v }) => `veteran-mac-sonucu-${v.hafta || ""}-hafta`,
@@ -153,7 +153,7 @@ export const veteranMacSonucu: ImageTemplate = {
     ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h);
 
     ctx.fillStyle = "#FFFFFF";
-    const score = `${v.evSkor || "0"}-${v.depSkor || "0"}`;
+    const score = `${(v.evSkor ?? "").trim() || "0"}-${(v.depSkor ?? "").trim() || "0"}`;
     const scoreSize = sizeForCap(ctx, scoreFont, SCORE.cap);
     ctx.font = scoreFont(scoreSize);
     const glyph = ctx.measureText(score);

@@ -119,7 +119,9 @@ export type ScalarField =
       categoryKey: string;
       opponentKey: string;
       venueKey: string;
-    };
+    }
+  /** Karabük Akademi Veteranlar ilk 11'i, yedekleri ve kaptanı (JSON, bkz. veteran-kadro.ts); kadrodan seçilir */
+  | { key: string; label: string; type: "veteranLineup"; default: string };
 
 /** "players" alanının değerini ada göre alfabetik sıralı listeye çevirir */
 export const parseNames = (value: string | undefined) =>
@@ -140,7 +142,7 @@ export interface ListField {
   max: number;
   fields: Exclude<
     ScalarField,
-    { type: "image" | "players" | "youthPlayers" | "leagueClub" | "lineup" | "youthLineup" | "sponsor" | "cardOffer" }
+    { type: "image" | "players" | "youthPlayers" | "leagueClub" | "lineup" | "youthLineup" | "veteranLineup" | "sponsor" | "cardOffer" }
   >[];
   defaultItems: Row[];
   /** Satır formundaki sütun sayısı (varsayılan 2); 3'te ilk sütun dar olur. Metin alanları tüm satırı kaplar. */

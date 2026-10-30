@@ -384,6 +384,150 @@ textarea:focus {
   text-align: center;
 }
 
+.lineup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lineup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.lineup-head .count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.chevron {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+.chevron.closed {
+  transform: rotate(-90deg);
+}
+.lineup-list {
+  max-height: 384px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.lineup-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #edf1f7;
+}
+.lineup-row:last-child {
+  border-bottom: 0;
+}
+.lineup-row.xi {
+  background: #f1f5fc;
+}
+.lineup-row.bench {
+  background: var(--bg);
+}
+.lineup-row .no {
+  width: 26px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+.lineup-row .name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+}
+.badge {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #e6f3fb;
+  color: #0b6c9c;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.pick {
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pick:hover:not(:disabled) {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.pick.on {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+.pick.bench:hover:not(:disabled) {
+  border-color: #4a5468;
+  color: #4a5468;
+}
+.pick.bench.on {
+  border-color: #4a5468;
+  background: #4a5468;
+  color: #fff;
+}
+.pick:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 12px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 13px;
+}
+.rules li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.rules .mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fde2e0;
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 900;
+}
+.rules .mark.ok {
+  background: #dcf5e7;
+  color: #1e7d4a;
+}
+
 .preview-frame {
   position: relative;
 }
