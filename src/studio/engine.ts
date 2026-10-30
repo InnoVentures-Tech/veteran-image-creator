@@ -60,8 +60,19 @@ export type ScalarField =
    * offerDefaults değerleri (logo, metin, oran…) diğer alanlara yazılır.
    */
   | { key: string; label: string; type: "cardOffer"; default: string; hint?: string }
-  /** A Takım oyuncularından çoklu seçim; değer alfabetik sıralı, satır satır oyuncu adlarıdır */
-  | { key: string; label: string; type: "players"; default: string; hint?: string }
+  /**
+   * A Takım oyuncularından çoklu seçim; değer alfabetik sıralı, satır satır oyuncu adlarıdır.
+   * options verilirse A Takım yerine bu oyuncular listelenir (örn. veteran kadrosu): value saklanan ad,
+   * label listede görünen metin ("21 - Ramazan Ç."); seçilenler bu sırayla gösterilir.
+   */
+  | {
+      key: string;
+      label: string;
+      type: "players";
+      default: string;
+      hint?: string;
+      options?: { value: string; label: string }[];
+    }
   /**
    * Altyapı kadrosundan çoklu seçim (değer "players" gibi satır satır adlardır): categoryKey alanındaki
    * kategorinin (U17, U14) oyuncuları listelenir; kategori değişince rakip, fikstürdeki maçtan opponentKey'e yazılır.

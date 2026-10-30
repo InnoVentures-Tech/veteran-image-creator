@@ -3,21 +3,23 @@ import { sizeForCap } from "./kamp-kadrosu";
 import { OPPONENTS, OUR_TEAM, logoSrc } from "./veteran-logos";
 
 // Karabük Akademi Veteranlar için Maç Sonucu (Safranboluspor dışı, yalnızca superadmin görür).
-// Tam sayfa fotoğraf; üstte lig ve hafta, altta beyaz logo kartları arasında lacivert skor kutusu,
-// altında "MAÇ SONUCU" ve iki yanında gol atanlar. Ölçüler hazır tasarımdan (1600x2000) alınmıştır.
+// Tam sayfa fotoğraf; üstte lig ve hafta, altta "MAÇ SONUCU", altında beyaz logo kartları arasında lacivert skor
+// kutusu, en altta logoların altında gol atanlar. Ölçüler hazır tasarımdan (1600x2000) alınmıştır.
 
-const TITLE = { baseline: 100, cap: 50, maxWidth: 1400 };
+const TITLE = { baseline: 102, cap: 55, maxWidth: 1400 };
 /** Ortadaki skor kutusu ve iki yanındaki logo kartları (kutu kartlardan biraz daha uzundur) */
-const BOX = { x: 600, y: 1515, w: 400, h: 220 };
+const BOX = { x: 600, y: 1610, w: 400, h: 222 };
 const TILES = [
-  { key: "logoSol", x: 400, y: 1525, w: 200, h: 200 },
-  { key: "logoSag", x: 1000, y: 1525, w: 200, h: 200 },
+  { key: "logoSol", x: 400, y: 1621, w: 200, h: 200 },
+  { key: "logoSag", x: 1000, y: 1621, w: 200, h: 200 },
 ];
-const TILE_PAD = 18;
-const SCORE = { cap: 150 };
-const RESULT = { baseline: 1828, cap: 64, maxWidth: 400 };
-/** Gol atanlar: solda ev sahibi (sağa hizalı), sağda deplasman (sola hizalı) */
-const SCORERS = { top: 1775, bottom: 1965, step: 55, cap: 32, leftX: 572, rightX: 1043, maxWidth: 330 };
+const TILE_PAD = 12;
+const SCORE = { cap: 145 };
+const RESULT = { baseline: 1577, cap: 74, maxWidth: 600 };
+/** Gol atanlar logoların altında: solda ev sahibi (sağa hizalı), sağda deplasman (sola hizalı); top ilk satırın taban çizgisi */
+const SCORERS = { top: 1883, bottom: 1975, step: 54, cap: 32, leftX: 568, rightX: 1045, maxWidth: 380 };
+/** Tasarımdaki başlık ve gol yazıları Barlow Condensed'den dar: yatayda bu oranda daraltılır */
+const SQUEEZE = 0.68;
 
 const SCORE_OPTIONS = Array.from({ length: 16 }, (_, i) => ({ value: String(i), label: String(i) }));
 const VENUES = [
@@ -32,7 +34,7 @@ const SIDES = [
 const condensed = (size: number) => `italic 700 ${size}px "Barlow Condensed", "Arial Narrow", sans-serif`;
 const scoreFont = (size: number) => `800 ${size}px "Montserrat", Arial, sans-serif`;
 
-/** Metni hizalayarak çizer; genişliğe sığmazsa puntoyu küçültür. */
+/** Metni hizalayarak, yatayda squeeze oranında daraltıp çizer; genişliğe sığmazsa puntoyu küçültür. */
 const drawFitted = (
   ctx: CanvasRenderingContext2D,
   text: string,
@@ -42,16 +44,21 @@ const drawFitted = (
   cap: number,
   maxWidth: number,
   align: CanvasTextAlign,
+  squeeze = 1,
 ) => {
   let size = sizeForCap(ctx, fontAt, cap);
   ctx.font = fontAt(size);
-  while (size > 12 && ctx.measureText(text).width > maxWidth) {
+  while (size > 12 && ctx.measureText(text).width * squeeze > maxWidth) {
     size -= 1;
     ctx.font = fontAt(size);
   }
+  ctx.save();
+  ctx.translate(x, baseline);
+  ctx.scale(squeeze, 1);
   ctx.textAlign = align;
   ctx.textBaseline = "alphabetic";
-  ctx.fillText(text, x, baseline);
+  ctx.fillText(text, 0, 0);
+  ctx.restore();
 };
 
 /** "25", "25'" ve "90+2" girişlerini "25’" biçimine getirir */
@@ -125,12 +132,12 @@ export const veteranMacSonucu: ImageTemplate = {
     }
     // Üstte başlık, altta skor ve gol atanlar okunsun diye fotoğraf iki uçtan koyulaşır
     verticalShade(ctx, [[0, "rgba(0,0,0,0.6)"], [1, "rgba(0,0,0,0)"]], 0, 320);
-    verticalShade(ctx, [[0, "rgba(0,0,0,0)"], [0.45, "rgba(0,0,0,0.55)"], [1, "rgba(0,0,0,0.92)"]], 1250, H - 1250);
+    verticalShade(ctx, [[0, "rgba(0,0,0,0)"], [0.4, "rgba(0,0,0,0.55)"], [1, "rgba(0,0,0,0.95)"]], 1000, H - 1000);
 
     ctx.fillStyle = "#FFFFFF";
     const week = (v.hafta ?? "").trim();
     const title = [(v.lig ?? "").trim(), week ? `${week}. Hafta` : ""].filter(Boolean).join(" ");
-    if (title) drawFitted(ctx, upper(title), W / 2, TITLE.baseline, condensed, TITLE.cap, TITLE.maxWidth, "center");
+    if (title) drawFitted(ctx, upper(title), W / 2, TITLE.baseline, condensed, TITLE.cap, TITLE.maxWidth, "center", SQUEEZE);
 
     for (const tile of TILES) {
       ctx.fillStyle = "#FFFFFF";
@@ -152,9 +159,9 @@ export const veteranMacSonucu: ImageTemplate = {
     const glyph = ctx.measureText(score);
     // Rakamların görünen yüksekliğine göre kutuda dikey ortalanır
     const scoreBaseline = BOX.y + BOX.h / 2 + (glyph.actualBoundingBoxAscent - glyph.actualBoundingBoxDescent) / 2;
-    drawFitted(ctx, score, BOX.x + BOX.w / 2, scoreBaseline, scoreFont, SCORE.cap, BOX.w - 60, "center");
+    drawFitted(ctx, score, BOX.x + BOX.w / 2, scoreBaseline, scoreFont, SCORE.cap, BOX.w - 40, "center");
 
-    drawFitted(ctx, "MAÇ SONUCU", W / 2, RESULT.baseline, condensed, RESULT.cap, RESULT.maxWidth, "center");
+    drawFitted(ctx, "MAÇ SONUCU", W / 2, RESULT.baseline, condensed, RESULT.cap, RESULT.maxWidth, "center", SQUEEZE);
 
     const rows = lists.goller ?? [];
     const [homeSide, awaySide] = v.evDeplasman === "away" ? ["rakip", "biz"] : ["biz", "rakip"];
@@ -171,7 +178,7 @@ export const veteranMacSonucu: ImageTemplate = {
         const name = upper(g.oyuncu.trim());
         const minute = minuteText(g.dakika);
         const text = !minute ? name : align === "right" ? `${name}  ${minute}` : `${minute}  ${name}`;
-        drawFitted(ctx, text, x, SCORERS.top + i * step, condensed, cap, SCORERS.maxWidth, align);
+        drawFitted(ctx, text, x, SCORERS.top + i * step, condensed, cap, SCORERS.maxWidth, align, SQUEEZE);
       });
   },
 };

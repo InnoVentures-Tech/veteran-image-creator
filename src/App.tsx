@@ -3,6 +3,7 @@ import {
   canvasToJpeg,
   defaultData,
   emptyRow,
+  parseNames,
   renderTemplate,
   type ImageTemplate,
   type ListField,
@@ -149,6 +150,78 @@ const Field = ({ label, hint, children }: { label: string; hint?: string; childr
   </label>
 );
 
+const normalizeSearch = (text: string) => text.toLocaleLowerCase("tr-TR").trim();
+
+/**
+ * Kadrodan çoklu seçim: seçilenler üstte etiket olarak listedeki sırayla görünür; değer alfabetik sıralı satır satır
+ * adlardır (value), listede label gösterilir (örn. "21 - Ramazan Ç.").
+ */
+const PlayersInput = ({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) => {
+  const [query, setQuery] = useState("");
+  const players = options.map((o) => o.value);
+  const labelOf = (name: string) => options.find((o) => o.value === name)?.label ?? name;
+  const selected = parseNames(value);
+  const selectedSet = new Set(selected);
+  const chips = [...players.filter((name) => selectedSet.has(name)), ...selected.filter((name) => !players.includes(name))];
+  const save = (names: string[]) => onChange(parseNames([...new Set(names)].join("\n")).join("\n"));
+  const toggle = (name: string) => save(selectedSet.has(name) ? selected.filter((n) => n !== name) : [...selected, name]);
+  const search = normalizeSearch(query);
+  const visible = players.filter((name) => !search || normalizeSearch(labelOf(name)).includes(search));
+
+  return (
+    <div className="players">
+      <div className="chips">
+        {chips.length ? (
+          chips.map((name) => (
+            <span key={name} className="chip">
+              {labelOf(name)}
+              <button type="button" aria-label={`${name} kadrodan çıkar`} onClick={() => toggle(name)}>
+                ×
+              </button>
+            </span>
+          ))
+        ) : (
+          <span className="hint">Henüz oyuncu seçilmedi.</span>
+        )}
+      </div>
+      <div className="players-search">
+        <input value={query} placeholder="Oyuncu ara…" onChange={(e) => setQuery(e.target.value)} />
+        <span className="count">
+          {selected.length}/{players.length}
+        </span>
+      </div>
+      <div className="players-actions">
+        <button type="button" className="link on" onClick={() => save([...selected, ...visible])} disabled={!visible.length}>
+          {search ? "Bulunanları seç" : "Tümünü seç"}
+        </button>
+        <button type="button" className="link danger" onClick={() => save([])} disabled={!selected.length}>
+          Temizle
+        </button>
+      </div>
+      <div className="checklist">
+        {visible.length ? (
+          visible.map((name) => (
+            <label key={name}>
+              <input type="checkbox" checked={selectedSet.has(name)} onChange={() => toggle(name)} />
+              {labelOf(name)}
+            </label>
+          ))
+        ) : (
+          <p className="hint">Aramayla eşleşen oyuncu yok.</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ListInput = ({ field, rows, onChange }: { field: ListField; rows: Row[]; onChange: (rows: Row[]) => void }) => {
   const update = (i: number, key: string, value: string) =>
     onChange(rows.map((r, j) => (j === i ? { ...r, [key]: value } : r)));
@@ -246,6 +319,9 @@ export const App = () => {
     }
   };
 
+  // Eksik ya da hatalı seçim varsa indirme kapalıdır; nedeni önizlemenin altında yazar
+  const blocked = template.validate?.(data) ?? null;
+
   // inlineRows: gruptaki alanlar ilk alanın yerinde yan yana çizilir
   const inlineOf = (key: string) => template.inlineRows?.find((g) => g.includes(key));
   const scalarByKey = (key: string) => template.fields.find((f) => f.key === key) as Scalar | undefined;
@@ -307,6 +383,19 @@ export const App = () => {
               return (
                 <ListInput key={field.key} field={field} rows={data.lists[field.key] ?? []} onChange={(r) => setList(field.key, r)} />
               );
+            // Etiket (<label>) içinde olursa boş alana tıklamak ilk düğmeyi (oyuncu çıkar) tetikler; bu yüzden div
+            if (field.type === "players")
+              return (
+                <div key={field.key} className="field">
+                  <span className="label">{field.label}</span>
+                  <PlayersInput
+                    value={data.values[field.key] ?? ""}
+                    onChange={(v) => setValue(field.key, v)}
+                    options={field.options ?? []}
+                  />
+                  {field.hint && <span className="hint">{field.hint}</span>}
+                </div>
+              );
             const group = inlineOf(field.key);
             if (group && group[0] !== field.key) return null;
             if (group)
@@ -332,7 +421,16 @@ export const App = () => {
 
         <section className="preview">
           {error && <p className="error">{error}</p>}
-          <canvas ref={preview} width={1600} height={2000} aria-label={`${template.name} önizleme`} />
+          {/* Sayfa kaydırılınca üstteki düğme görünmez; önizlemenin üstüne gelince ortada indirme düğmesi çıkar */}
+          <div className="preview-frame">
+            <canvas ref={preview} width={1600} height={2000} aria-label={`${template.name} önizleme`} />
+            <div className="preview-overlay">
+              <button type="button" className="primary" onClick={download} disabled={busy || !!blocked}>
+                {busy ? "Hazırlanıyor…" : "JPEG olarak indir"}
+              </button>
+            </div>
+          </div>
+          {blocked && <p className="notice">{blocked}</p>}
         </section>
       </main>
     </div>

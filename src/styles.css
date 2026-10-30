@@ -175,7 +175,7 @@ main {
   color: var(--muted);
 }
 
-input:not([type="radio"]):not([type="file"]),
+input:not([type="radio"]):not([type="file"]):not([type="checkbox"]),
 select,
 textarea {
   width: 100%;
@@ -284,8 +284,151 @@ textarea:focus {
 .link:hover {
   color: var(--blue);
 }
+.link.on {
+  color: var(--blue);
+}
+.link.danger {
+  color: var(--danger);
+}
+.link:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.players {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.chip button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.chip button:hover {
+  background: #d3def3;
+}
+.players-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.players-search .count {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.players-actions {
+  display: flex;
+  gap: 14px;
+}
+.checklist {
+  max-height: 288px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.checklist label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #edf1f7;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.checklist label:last-child {
+  border-bottom: 0;
+}
+.checklist label:hover {
+  background: var(--bg);
+}
+.checklist input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--blue);
+}
+.checklist .hint {
+  margin: 0;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.preview-frame {
+  position: relative;
+}
+.preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+}
+.preview-frame:hover .preview-overlay,
+.preview-frame:focus-within .preview-overlay {
+  background: rgba(0, 0, 0, 0.25);
+  opacity: 1;
+  pointer-events: auto;
+}
+.preview-overlay .primary {
+  padding: 13px 22px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.preview-overlay .primary:disabled {
+  background: #6b7489;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.notice {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff6e5;
+  color: #9a6200;
+  font-size: 13px;
+  font-weight: 700;
+}
 
 .preview canvas {
+  display: block;
   width: 100%;
   height: auto;
   border-radius: 10px;

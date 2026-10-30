@@ -1,5 +1,6 @@
 import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, FONTS, drawCover, upper, type ImageTemplate } from "./engine";
 import { sizeForCap } from "./kamp-kadrosu";
+import { PLAYER_OPTIONS, duplicateMessage, pickedPlayers } from "./veteran-kadro";
 
 // Karabük Akademi Veteranlar için İlk 11 (Safranboluspor dışı, yalnızca superadmin görür).
 // Arka planlar hazır tasarımdan, soldaki liste silinerek alınmıştır; "İLK 11" başlığı görselin içindedir.
@@ -33,19 +34,10 @@ const DIVIDER = { y: 1655, x0: 62, x1: 545, width: 2 };
 const SUBS_TITLE = { x: 62, baseline: 1738, cap: 52 };
 const SUBS = { x: 63, baseline: 1802, pitch: 63, cap: 43, maxWidth: 482, maxLines: 3 };
 
-const DEFAULT_LINEUP = [
-  ["1", "CAHİT BERKAY"],
-  ["21", "RAMAZAN"],
-  ["6", "HÜSEYİN"],
-  ["67", "UĞUR"],
-  ["14", "SERCAN"],
-  ["65", "ETEM"],
-  ["7", "EMRULLAH"],
-  ["61", "CANER"],
-  ["9", "BAYRAM"],
-  ["18", "AYDIN"],
-  ["54", "SERHAN"],
-].map(([numara, ad]) => ({ numara, ad }));
+/** Varsayılan ilk 11 ve yedekler: kadrodaki (veteran-kadro.ts) forma numaraları */
+const DEFAULT_LINEUP = ["1", "21", "6", "67", "14", "65", "7", "61", "9", "18", "54"].map((numara) => ({ numara }));
+const DEFAULT_SUBS = ["41", "25", "4", "10", "89", "99", "77"].map((numara) => ({ numara }));
+const playerField = { key: "numara", label: "Oyuncu", type: "select" as const, default: "", options: PLAYER_OPTIONS };
 
 /** Metni yatayda daraltarak (ve gerekirse maxWidth'e sığdırarak) çizer; çizilen genişliği döner. */
 const drawNarrow = (
@@ -95,7 +87,7 @@ const subLines = (ctx: CanvasRenderingContext2D, names: string[], maxWidth: numb
 export const veteranIlk11: ImageTemplate = {
   id: "veteran-ilk-11",
   name: "İlk 11",
-  description: "Karabük Akademi Veteranlar ilk 11'i; forma numaraları, adlar ve yedekler elle girilir.",
+  description: "Karabük Akademi Veteranlar ilk 11'i; oyuncular, kaptan ve yedekler kadrodan seçilir.",
   dynamicImages: ({ values }) => ({ background: bgSrc(values.arkaPlan || BACKGROUNDS[0].value) }),
   fields: [
     { key: "arkaPlan", label: "Arka plan", type: "select", default: BACKGROUNDS[0].value, options: BACKGROUNDS },
@@ -107,28 +99,23 @@ export const veteranIlk11: ImageTemplate = {
       flat: true,
       min: 1,
       max: 11,
-      fields: [
-        { key: "numara", label: "No", type: "text", default: "", placeholder: "10", maxLength: 3 },
-        { key: "ad", label: "Ad", type: "text", default: "", placeholder: "AD", maxLength: 24 },
-      ],
+      fields: [playerField],
       defaultItems: DEFAULT_LINEUP,
     },
-    {
-      key: "kaptan",
-      label: "Kaptanın forma numarası",
-      type: "text",
-      default: "61",
-      placeholder: "61",
-      maxLength: 3,
-    },
+    { key: "kaptan", label: "Kaptan", type: "select", default: "61", options: PLAYER_OPTIONS },
     {
       key: "yedekler",
       label: "Yedekler",
-      type: "textarea",
-      default: "EMRAH, ALİ TOPÇU, ÜMİT, MUSTAFA, ALİ TOPÇU, ŞAFAK, ÖNER, ERSAN",
-      placeholder: "Virgülle ayırın: EMRAH, ALİ TOPÇU, …",
+      type: "list",
+      itemLabel: "Yedek",
+      flat: true,
+      min: 0,
+      max: 12,
+      fields: [playerField],
+      defaultItems: DEFAULT_SUBS,
     },
   ],
+  validate: ({ lists }) => duplicateMessage([...pickedPlayers(lists.oyuncular), ...pickedPlayers(lists.yedekler)]),
   fileLabel: ({ values }) => `veteran-${values.arkaPlan || ""}`,
   draw: (ctx, { values: v, lists }, { statics }) => {
     if (statics.background) drawCover(ctx, statics.background, 0, 0, W, H);
@@ -141,10 +128,10 @@ export const veteranIlk11: ImageTemplate = {
     const squeeze = NARROW.width / ctx.measureText(NARROW.sample).width;
 
     const captain = (v.kaptan ?? "").trim();
-    (lists.oyuncular ?? []).slice(0, 11).forEach((row, i) => {
+    pickedPlayers(lists.oyuncular).slice(0, 11).forEach((player, i) => {
       const baseline = ROWS.baseline + i * ROWS.pitch;
-      const number = (row.numara ?? "").trim();
-      const name = upper((row.ad ?? "").trim());
+      const number = player.numara;
+      const name = upper(player.ad);
       ctx.fillStyle = NAVY;
       if (number) drawNarrow(ctx, number, ROWS.numCenterX, baseline - (ROWS.nameCap - ROWS.numCap) / 2, ROWS.numCap, squeeze, "center");
       if (!name) return;
@@ -165,10 +152,7 @@ export const veteranIlk11: ImageTemplate = {
       drawNarrow(ctx, "C", bx + BADGE.w / 2, by + BADGE.h / 2 + BADGE.cap / 2, BADGE.cap, squeeze, "center");
     });
 
-    const subs = (v.yedekler ?? "")
-      .split(/[,\n]/)
-      .map((s) => upper(s.trim()))
-      .filter(Boolean);
+    const subs = pickedPlayers(lists.yedekler).map((p) => upper(p.ad));
     if (!subs.length) return;
 
     ctx.fillStyle = BLUE;

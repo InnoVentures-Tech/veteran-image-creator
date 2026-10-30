@@ -1,5 +1,6 @@
-import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, type ImageTemplate, type Row } from "./engine";
+import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, type ImageTemplate } from "./engine";
 import { sizeForCap } from "./kamp-kadrosu";
+import { PLAYER_CHOICES, findPlayer, playersByName, type VeteranPlayer } from "./veteran-kadro";
 import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 
 // Karabük Akademi Veteranlar için Kamp Kadrosu (Safranboluspor dışı, yalnızca superadmin görür).
@@ -42,36 +43,16 @@ const COLUMNS = [
 const COACH = { centerX: 1186, baseline: 1735, cap: 34, maxWidth: 700 };
 const FOOTER = { baseline: 1975, cap: 19, dateX: 94, venueRight: 1503 };
 
-const DEFAULT_SQUAD = [
-  ["1", "C.Berkay", "GK"],
-  ["4", "Ümit"],
-  ["5", "Hüseyin"],
-  ["7", "Emrullah"],
-  ["10", "Mustafa"],
-  ["12", "Namjo", "GK"],
-  ["18", "Aydın"],
-  ["19", "Murat"],
-  ["21", "Ramazan"],
-  ["25", "Ali Topçu"],
-  ["33", "Ali Türk"],
-  ["41", "Emrah", "GK"],
-  ["53", "Şahin"],
-  ["54", "Serhan"],
-  ["61", "Caner"],
-  ["65", "Etem"],
-  ["77", "Ersan"],
-  ["78", "Mehmet Ali"],
-  ["89", "Şafak"],
-  ["99", "Öner"],
-].map(([numara, ad, mevki = ""]) => ({ numara, ad, mevki }));
+/** Görsele sığan en fazla oyuncu */
+const MAX_PLAYERS = 24;
 
-/** Forma numarasına göre sıralar; numarasız oyuncular sona */
-const byNumber = (a: Row, b: Row) => {
-  const n = (r: Row) => Number.parseInt(r.numara ?? "", 10);
-  const [x, y] = [n(a), n(b)];
-  if (Number.isNaN(x) || Number.isNaN(y)) return Number.isNaN(x) ? (Number.isNaN(y) ? 0 : 1) : -1;
-  return x - y;
-};
+/** Varsayılan kamp kadrosu: kadrodaki (veteran-kadro.ts) forma numaraları */
+const DEFAULT_SQUAD = ["1", "4", "6", "7", "10", "12", "18", "19", "21", "25", "33", "41", "53", "54", "61", "65", "77", "78", "89", "99"]
+  .map((numara) => findPlayer(numara)?.ad ?? "")
+  .join("\n");
+
+/** Forma numarasına göre sıralar */
+const byNumber = (a: VeteranPlayer, b: VeteranPlayer) => Number.parseInt(a.numara, 10) - Number.parseInt(b.numara, 10);
 
 /** Metni büyük harf yüksekliğine göre, yatayda daraltarak çizer; maxWidth'e sığmazsa daha da daraltır. Çizilen genişliği döner. */
 const drawText = (
@@ -99,7 +80,7 @@ const drawText = (
 export const veteranKampKadrosu: ImageTemplate = {
   id: "veteran-kamp-kadrosu",
   name: "Kamp Kadrosu",
-  description: "Karabük Akademi Veteranlar kamp kadrosu; oyuncular elle girilir, görselde forma numarasına göre sıralanır.",
+  description: "Karabük Akademi Veteranlar kamp kadrosu; oyuncular kadrodan seçilir, görselde forma numarasına göre sıralanır.",
   dynamicImages: ({ values }) => ({
     background: bgSrc(values.arkaPlan || BACKGROUNDS[0].value),
     ...Object.fromEntries(
@@ -122,33 +103,27 @@ export const veteranKampKadrosu: ImageTemplate = {
     { key: "saha", label: "Saha", type: "text", default: "Karabük 5000 Evler Futbol Sahası", maxLength: 50 },
     { key: "teknikDirektor", label: "Teknik direktör", type: "text", default: "Coşkun Uzunçelebi", maxLength: 32 },
     {
-      key: "oyuncular",
+      key: "kadro",
       label: "Kamp kadrosu",
-      type: "list",
-      itemLabel: "Oyuncu",
-      flat: true,
-      min: 1,
-      max: 24,
-      fields: [
-        { key: "numara", label: "No", type: "text", default: "", placeholder: "10", maxLength: 3 },
-        { key: "ad", label: "Ad", type: "text", default: "", placeholder: "Ad", maxLength: 20 },
-        {
-          key: "mevki",
-          label: "Mevki",
-          type: "select",
-          default: "",
-          options: [
-            { value: "", label: "Oyuncu" },
-            { value: "GK", label: "Kaleci" },
-          ],
-        },
-      ],
-      defaultItems: DEFAULT_SQUAD,
+      type: "players",
+      default: DEFAULT_SQUAD,
+      options: PLAYER_CHOICES,
+      hint: `Takım kadrosundaki oyuncular; seçilenler görselde forma numarasına göre listelenir (en fazla ${MAX_PLAYERS}).`,
     },
   ],
+  validate: ({ values }) => {
+    const count = playersByName(values.kadro).length;
+    if (!count) return "Kamp kadrosu için en az bir oyuncu seçin.";
+    return count > MAX_PLAYERS ? `Kamp kadrosu en fazla ${MAX_PLAYERS} oyuncu olabilir; şu an ${count} oyuncu seçili.` : null;
+  },
   fileLabel: ({ values }) => `veteran-kamp-${values.arkaPlan || ""}`,
-  inlineRows: [["evDeplasman", "logoStili"]],
-  draw: (ctx, { values: v, lists }, { statics }) => {
+  inlineRows: [
+    ["arkaPlan", "rakip"],
+    ["evDeplasman", "logoStili"],
+    ["hafta", "tarih"],
+    ["saha", "teknikDirektor"],
+  ],
+  draw: (ctx, { values: v }, { statics }) => {
     if (statics.background) drawCover(ctx, statics.background, 0, 0, W, H);
     else {
       ctx.fillStyle = "#06122B";
@@ -170,28 +145,25 @@ export const veteranKampKadrosu: ImageTemplate = {
     const venue = (v.saha ?? "").trim();
     if (venue) drawText(ctx, venue, FOOTER.venueRight, FOOTER.baseline, lightFont, FOOTER.cap, "right", 700);
 
-    const players = (lists.oyuncular ?? []).filter((r) => (r.ad ?? "").trim()).sort(byNumber);
+    const players = playersByName(v.kadro).sort(byNumber).slice(0, MAX_PLAYERS);
     const perColumn = Math.ceil(players.length / 2);
     // 11 satıra kadar tasarımdaki aralık; fazlasında satırlar teknik direktörün üstüne sığacak kadar sıklaşır
     const pitch = Math.min(LIST.pitch, (LIST.maxBottom - LIST.top - LIST.nameCap) / Math.max(1, perColumn - 1));
     const scale = Math.min(1, pitch / LIST.pitch);
-    players.forEach((row, i) => {
+    players.forEach((player, i) => {
       const col = COLUMNS[i < perColumn ? 0 : 1];
       const capTop = LIST.top + (i % perColumn) * pitch;
       const nameCap = LIST.nameCap * scale;
       const middle = capTop + nameCap / 2;
 
-      const number = (row.numara ?? "").trim();
-      if (number) {
-        ctx.fillStyle = NUMBER_BLUE;
-        drawText(ctx, number, col.numCenterX, middle + (LIST.numCap * scale) / 2, numberFont, LIST.numCap * scale, "center");
-      }
+      ctx.fillStyle = NUMBER_BLUE;
+      drawText(ctx, player.numara, col.numCenterX, middle + (LIST.numCap * scale) / 2, numberFont, LIST.numCap * scale, "center");
 
-      const isGk = row.mevki === "GK";
+      const isGk = !!player.kaleci;
       ctx.font = lightFont(sizeForCap(ctx, lightFont, LIST.gkCap * scale));
       const gkWidth = isGk ? LIST.gkGap + ctx.measureText("(GK)").width * SQUEEZE : 0;
       ctx.fillStyle = "#FFFFFF";
-      const width = drawText(ctx, row.ad.trim(), col.nameX, capTop + nameCap, nameFont, nameCap, "left", col.maxRight - col.nameX - gkWidth);
+      const width = drawText(ctx, player.ad, col.nameX, capTop + nameCap, nameFont, nameCap, "left", col.maxRight - col.nameX - gkWidth);
       if (!isGk) return;
       ctx.fillStyle = GK_GRAY;
       drawText(ctx, "(GK)", col.nameX + width + LIST.gkGap, capTop + nameCap, lightFont, LIST.gkCap * scale);
