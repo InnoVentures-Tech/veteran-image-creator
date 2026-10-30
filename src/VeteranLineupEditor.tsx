@@ -1,6 +1,7 @@
 // İlk 11 düzenleyicisi: kadrodan (studio/veteran-kadro.ts) ilk 11 ve yedekler, ilk 11'den kaptan seçilir; kurallar
 // canlı denetlenir.
 import { useState } from "react";
+import { Dropdown } from "./Dropdown";
 import {
   MAX_STARTERS,
   MAX_SUBS,
@@ -114,18 +115,16 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
 
       <label className="field">
         <span className="label">Kaptan</span>
-        <select
+        <Dropdown
+          ariaLabel="Kaptan"
           value={starterSet.has(captain) ? captain : ""}
-          onChange={(e) => save({ captain: e.target.value })}
+          onChange={(v) => save({ captain: v })}
           disabled={!starters.length}
-        >
-          <option value="">{starters.length ? "Kaptan seçin" : "Önce ilk 11'i seçin"}</option>
-          {orderedPlayers(starters).map((p) => (
-            <option key={p.numara} value={p.numara}>
-              {p.numara} · {p.ad}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "", label: starters.length ? "Kaptan seçin" : "Önce ilk 11'i seçin" },
+            ...orderedPlayers(starters).map((p) => ({ value: p.numara, label: `${p.numara} · ${p.ad}` })),
+          ]}
+        />
         <span className="hint">Adının yanına “C” eklenir.</span>
       </label>
 

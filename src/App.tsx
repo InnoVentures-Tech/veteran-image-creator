@@ -11,6 +11,7 @@ import {
   type TemplateData,
   type TemplateField,
 } from "./studio/engine";
+import { Dropdown } from "./Dropdown";
 import { TEMPLATES } from "./templates";
 import { VeteranLineupEditor } from "./VeteranLineupEditor";
 
@@ -48,7 +49,13 @@ const initialData = () => {
     TEMPLATES.map((t) => {
       const base = defaultData(t);
       const s = saved[t.id];
-      return [t.id, s ? { values: { ...base.values, ...s.values }, lists: { ...base.lists, ...s.lists } } : base];
+      if (!s) return [t.id, base];
+      const values = { ...base.values, ...s.values };
+      // Kaldırılmış bir seçenek (örn. eski arka plan) kayıtlıysa varsayılana dönülür; yoksa görsel eksik çizilir
+      for (const f of t.fields)
+        if ((f.type === "select" || f.type === "radio") && !f.options.some((o) => o.value === values[f.key]))
+          values[f.key] = base.values[f.key];
+      return [t.id, { values, lists: { ...base.lists, ...s.lists } }];
     }),
   );
 };
@@ -98,13 +105,7 @@ const ScalarInput = ({ field, value, onChange }: { field: Scalar; value: string;
       );
     case "select":
       return (
-        <select value={value} onChange={(e) => onChange(e.target.value)}>
-          {field.options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <Dropdown value={value} options={field.options} onChange={onChange} ariaLabel={field.label} />
       );
     case "radio":
       return (
@@ -354,18 +355,13 @@ export const App = () => {
         ))}
       </nav>
       {/* Telefonda sekmeler sığmadığı için şablon açılır listeden seçilir */}
-      <select
+      <Dropdown
         className="template-select"
-        aria-label="Şablon"
+        ariaLabel="Şablon"
         value={template.id}
-        onChange={(e) => setTemplateId(e.target.value)}
-      >
-        {TEMPLATES.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
+        options={TEMPLATES.map((t) => ({ value: t.id, label: t.name }))}
+        onChange={setTemplateId}
+      />
 
       <main>
         <section className="form">
