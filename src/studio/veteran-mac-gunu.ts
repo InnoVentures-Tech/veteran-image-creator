@@ -1,12 +1,11 @@
-import { drawContain, drawCover, upper, type ImageTemplate } from "./engine";
-import { sizeForCap } from "./kamp-kadrosu";
+import { drawContain, drawCover, upper, sizeForCap, type ImageTemplate } from "./engine";
 import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 
-// Karabük Akademi Veteranlar için Maç Günü (Safranboluspor dışı, yalnızca superadmin görür).
+// Karabük Akademi Veteranlar için Maç Günü.
 // Çerçeve hazır tasarımdan alınmıştır: "MAÇ GÜNÜ" yazısı görselin içindedir, fotoğraf alanı saydamdır,
 // logolar ile tarih/saha yazısı silinmiştir. Ölçüler o tasarımdan (1600x2000) ölçülmüştür.
 
-const FRAME = "/images/design/berkay-ozel/mac-gunu-cerceve.webp";
+const FRAME = "/images/mac-gunu-cerceve.webp";
 
 /** Çerçevedeki saydam fotoğraf alanının sınırları */
 const PHOTO = { x: 387, y: 186, w: 1214, h: 1632 };

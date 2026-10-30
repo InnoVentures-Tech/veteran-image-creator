@@ -1,7 +1,7 @@
 # Veteran Görsel Oluşturucu
 
-Karabük Akademi Veteranlar için sosyal medya görselleri (1600×2000 JPEG): **İlk 11**, **Kamp Kadrosu**, **Maç Günü**.
-Her şey tarayıcıda çizilir; yüklenen fotoğraf ve logolar hiçbir sunucuya gönderilmez.
+Karabük Akademi Veteranlar için sosyal medya görselleri (1600×2000 JPEG): **İlk 11**, **Kamp Kadrosu**, **Maç Günü**, **Maç Sonucu**.
+Her şey tarayıcıda çizilir; yüklenen fotoğraflar hiçbir sunucuya gönderilmez.
 
 ## Geliştirme
 
@@ -10,17 +10,13 @@ npm install
 npm run dev
 ```
 
-## Şablonları güncelleme
+## Yapı
 
-Şablonlar Safranboluspor panelindeki "Berkay Özel" grubundan gelir. `src/studio/` ve
-`public/images/design/berkay-ozel/` elle düzenlenmez; panelde yapılan değişiklikler şu komutla alınır:
-
-```bash
-npm run sync            # varsayılan: ../safranboluspor-frontend
-npm run sync -- /yol/safranboluspor-frontend
-```
-
-Yeni bir şablon eklendiyse `src/templates.ts` listesine de eklenir.
+- `src/studio/engine.ts`: çizim altyapısı ve şablon/alan tipleri
+- `src/studio/veteran-*.ts`: şablonlar; yeni şablon `src/templates.ts` listesine eklenir
+- `src/studio/veteran-kadro.ts`: takım kadrosu (forma numarası, ad, kaleci); kadro değişince yalnızca burası güncellenir
+- `src/studio/veteran-logos.ts`: rakip takımlar ve logoları
+- `public/images/`: arka planlar ve çerçeveler; takım logoları `public/images/logos/` altında renkli (`<takım>.webp`) ve beyaz (`<takım>-beyaz.webp`)
 
 ## Yayın
 

@@ -1,8 +1,7 @@
-import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, FONTS, drawCover, upper, type ImageTemplate } from "./engine";
-import { sizeForCap } from "./kamp-kadrosu";
+import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, FONTS, drawCover, upper, sizeForCap, type ImageTemplate } from "./engine";
 import { checkLineup, orderedPlayers, parseLineup, serializeLineup } from "./veteran-kadro";
 
-// Karabük Akademi Veteranlar için İlk 11 (Safranboluspor dışı, yalnızca superadmin görür).
+// Karabük Akademi Veteranlar için İlk 11.
 // Arka planlar hazır tasarımdan, soldaki liste silinerek alınmıştır; "İLK 11" başlığı görselin içindedir.
 // Ölçüler ve renkler o tasarımdan (1600x2000) ölçülmüştür.
 
@@ -16,10 +15,8 @@ const BACKGROUNDS = [
   { value: "etem-inci", label: "Etem İnci - Beyaz Forma" },
   { value: "ali-turk", label: "Ali Türk - Beyaz Forma" },
   { value: "mustafa-karaca", label: "Mustafa Karaca - Beyaz Forma" },
-  { value: "mavi-forma", label: "Mavi Forma (oyuncusuz)" },
-  { value: "beyaz-forma", label: "Beyaz Forma (oyuncusuz)" },
 ];
-const bgSrc = (key: string) => `/images/design/berkay-ozel/veteran-ilk-11-${key}.webp`;
+const bgSrc = (key: string) => `/images/veteran-ilk-11-${key}.webp`;
 
 const font = (size: number) => `400 ${size}px ${FONTS.display}`;
 

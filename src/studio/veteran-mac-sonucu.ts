@@ -1,8 +1,7 @@
-import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, upper, verticalShade, type ImageTemplate, type Row } from "./engine";
-import { sizeForCap } from "./kamp-kadrosu";
+import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, upper, verticalShade, sizeForCap, type ImageTemplate, type Row } from "./engine";
 import { OPPONENTS, OUR_TEAM, logoSrc } from "./veteran-logos";
 
-// Karabük Akademi Veteranlar için Maç Sonucu (Safranboluspor dışı, yalnızca superadmin görür).
+// Karabük Akademi Veteranlar için Maç Sonucu.
 // Tam sayfa fotoğraf; üstte lig ve hafta, altta "MAÇ SONUCU", altında beyaz logo kartları arasında lacivert skor
 // kutusu, en altta logoların altında gol atanlar. Ölçüler hazır tasarımdan (1600x2000) alınmıştır.
 
@@ -101,7 +100,6 @@ export const veteranMacSonucu: ImageTemplate = {
       label: "Gol atanlar",
       type: "list",
       itemLabel: "Gol",
-      columns: 3,
       min: 0,
       max: 12,
       fields: [
@@ -109,7 +107,6 @@ export const veteranMacSonucu: ImageTemplate = {
         { key: "oyuncu", label: "Oyuncu", type: "text", default: "", placeholder: "Serhan Dinçer", maxLength: 30 },
         { key: "takim", label: "Takım", type: "select", default: "biz", options: SIDES },
       ],
-      columnSpan: { oyuncu: 1 },
       defaultItems: [
         { dakika: "5", oyuncu: "Serhan Dinçer", takim: "biz" },
         { dakika: "18", oyuncu: "Serdar", takim: "rakip" },

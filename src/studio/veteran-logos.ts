@@ -1,5 +1,5 @@
 // Karabük Akademi Veteranlar şablonlarının ortak takım logoları. Her logonun renkli ve beyaz (tek renk monogram) sürümü
-// public/images/design/berkay-ozel/logos/ altındadır: <takım>.webp ve <takım>-beyaz.webp
+// public/images/logos/ altındadır: <takım>.webp ve <takım>-beyaz.webp
 
 /** Bizim takım */
 export const OUR_TEAM = "karabuk-akademi";
@@ -35,4 +35,4 @@ export const LOGO_STYLES = [
 ];
 
 export const logoSrc = (team: string, style: string) =>
-  `/images/design/berkay-ozel/logos/${team}${style === "beyaz" ? "-beyaz" : ""}.webp`;
+  `/images/logos/${team}${style === "beyaz" ? "-beyaz" : ""}.webp`;

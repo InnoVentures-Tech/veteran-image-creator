@@ -1,9 +1,10 @@
 // İlk 11 düzenleyicisi: kadrodan (studio/veteran-kadro.ts) ilk 11 ve yedekler, ilk 11'den kaptan seçilir; kurallar
-// canlı denetlenir. Safranboluspor panelindeki düzenleyicinin (veteran-lineup-editor.tsx) bu projedeki karşılığıdır.
+// canlı denetlenir.
 import { useState } from "react";
 import {
   MAX_STARTERS,
   MAX_SUBS,
+  MAX_YOUTH_STARTERS,
   ROSTER,
   checkLineup,
   orderedPlayers,
@@ -23,12 +24,14 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
   const starterSet = new Set(starters);
   const subSet = new Set(subs);
   const keeperInXI = starters.some((n) => ROSTER.find((p) => p.numara === n)?.kaleci);
+  const youthInXI = starters.filter((n) => ROSTER.find((p) => p.numara === n)?.genc).length;
   const checks = checkLineup(lineup);
 
   /** Oyuncuyu ilk 11'e / yedeklere eklemenin önündeki engel (yoksa null) */
   const starterBlock = (p: VeteranPlayer) => {
     if (starters.length >= MAX_STARTERS) return "İlk 11 dolu";
     if (p.kaleci && keeperInXI) return "İlk 11'de zaten bir kaleci var";
+    if (p.genc && youthInXI >= MAX_YOUTH_STARTERS) return `İlk 11'de zaten ${MAX_YOUTH_STARTERS} genç var; bu oyuncu yedek olabilir`;
     return null;
   };
   const subBlock = () => (subs.length >= MAX_SUBS ? `Yedekler en fazla ${MAX_SUBS} kişi` : null);
@@ -83,6 +86,7 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
                 <span className="name">
                   {p.ad}
                   {p.kaleci && <span className="badge">Kaleci</span>}
+                  {p.genc && <span className="badge">Genç</span>}
                 </span>
                 <button
                   type="button"

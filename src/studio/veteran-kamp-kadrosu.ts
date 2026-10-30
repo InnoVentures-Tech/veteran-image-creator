@@ -1,9 +1,8 @@
-import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, type ImageTemplate } from "./engine";
-import { sizeForCap } from "./kamp-kadrosu";
+import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, drawContain, drawCover, sizeForCap, type ImageTemplate } from "./engine";
 import { PLAYER_CHOICES, findPlayer, playersByName, type VeteranPlayer } from "./veteran-kadro";
 import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 
-// Karabük Akademi Veteranlar için Kamp Kadrosu (Safranboluspor dışı, yalnızca superadmin görür).
+// Karabük Akademi Veteranlar için Kamp Kadrosu.
 // Arka planlar hazır tasarımdan yazılar ve logolar silinerek alınmıştır; "KAMP" başlığı ve köşe çizgileri görselin içindedir.
 // Ölçüler ve renkler o tasarımdan (1500x2000, canvas'a 1600x2000 kırpılarak) ölçülmüştür. Tüm arka planlar aynı
 // boş zeminden üretilir (oyuncu fotoğrafı dekupe edilip sola yerleştirilir), bu yüzden yerleşim ortaktır.
@@ -17,7 +16,7 @@ const BACKGROUNDS = [
   { value: "alper", label: "Alper - Mavi Forma" },
   { value: "huseyin", label: "Hüseyin - Beyaz Forma" },
 ];
-const bgSrc = (key: string) => `/images/design/berkay-ozel/veteran-kamp-${key}.webp`;
+const bgSrc = (key: string) => `/images/veteran-kamp-${key}.webp`;
 
 /**
  * Logolar sol üstteki köşe çizgilerinin (x 92–272, y 190–529) içinde: üstte ev sahibi, altta misafir.

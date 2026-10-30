@@ -471,7 +471,7 @@ textarea:focus {
   color: var(--muted);
   cursor: pointer;
 }
-.pick:hover:not(:disabled) {
+.pick:hover:not(:disabled):not(.on) {
   border-color: var(--blue);
   color: var(--blue);
 }
@@ -480,7 +480,7 @@ textarea:focus {
   background: var(--blue);
   color: #fff;
 }
-.pick.bench:hover:not(:disabled) {
+.pick.bench:hover:not(:disabled):not(.on) {
   border-color: #4a5468;
   color: #4a5468;
 }

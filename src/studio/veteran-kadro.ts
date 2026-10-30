@@ -7,6 +7,8 @@ export interface VeteranPlayer {
   numara: string;
   ad: string;
   kaleci?: boolean;
+  /** Gençler: ilk 11'de en fazla MAX_YOUTH_STARTERS tanesi oynar, yedekte sınır yok */
+  genc?: boolean;
 }
 
 export const ROSTER: VeteranPlayer[] = [
@@ -22,7 +24,7 @@ export const ROSTER: VeteranPlayer[] = [
   { numara: "11", ad: "Abdurrahim" },
   { numara: "12", ad: "Namjo", kaleci: true },
   { numara: "14", ad: "Sercan" },
-  { numara: "18", ad: "Aydın" },
+  { numara: "18", ad: "Aydın", genc: true },
   { numara: "19", ad: "Murat Y." },
   { numara: "20", ad: "Sinan" },
   { numara: "21", ad: "Ramazan Ç." },
@@ -38,11 +40,11 @@ export const ROSTER: VeteranPlayer[] = [
   { numara: "54", ad: "Serhan" },
   { numara: "61", ad: "Caner" },
   { numara: "65", ad: "Etem" },
-  { numara: "67", ad: "Uğur" },
+  { numara: "67", ad: "Uğur", genc: true },
   { numara: "77", ad: "Ersan" },
   { numara: "78", ad: "Mehmet Ali" },
   { numara: "83", ad: "Yüksel" },
-  { numara: "89", ad: "Şafak" },
+  { numara: "89", ad: "Şafak", genc: true },
   { numara: "99", ad: "Öner" },
 ];
 
@@ -66,6 +68,8 @@ export interface VeteranLineup {
 }
 
 export const MAX_STARTERS = 11;
+/** İlk 11'de oynayabilecek en fazla genç oyuncu */
+export const MAX_YOUTH_STARTERS = 2;
 /** Görseldeki yedekler alanına sığan en fazla yedek */
 export const MAX_SUBS = 12;
 
@@ -101,6 +105,7 @@ export const checkLineup = (lineup: VeteranLineup): RuleCheck[] => {
   const starters = orderedPlayers(lineup.starters);
   const subs = orderedPlayers(lineup.subs);
   const keepers = starters.filter((p) => p.kaleci).length;
+  const youth = starters.filter((p) => p.genc);
   const hasCaptain = starters.some((p) => p.numara === lineup.captain);
   return [
     { label: "İlk 11 tamam", ok: starters.length === MAX_STARTERS, detail: `${starters.length}/${MAX_STARTERS} oyuncu` },
@@ -108,6 +113,11 @@ export const checkLineup = (lineup: VeteranLineup): RuleCheck[] => {
       label: "İlk 11'de bir kaleci",
       ok: keepers === 1,
       detail: keepers === 1 ? "1 kaleci" : keepers === 0 ? "Kaleci seçilmedi" : `${keepers} kaleci var`,
+    },
+    {
+      label: `İlk 11'de en fazla ${MAX_YOUTH_STARTERS} genç`,
+      ok: youth.length <= MAX_YOUTH_STARTERS,
+      detail: youth.length ? `${youth.length} genç (${youth.map((p) => p.ad).join(", ")})` : "Genç yok",
     },
     { label: "Kaptan seçildi", ok: hasCaptain, detail: hasCaptain ? "İlk 11'den" : "İlk 11'den bir kaptan seçin" },
     { label: `Yedekler en fazla ${MAX_SUBS} kişi`, ok: subs.length <= MAX_SUBS, detail: `${subs.length}/${MAX_SUBS} oyuncu` },
