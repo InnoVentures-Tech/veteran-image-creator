@@ -1,5 +1,5 @@
 import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, FONTS, drawCover, upper, sizeForCap, type ImageTemplate } from "./engine";
-import { checkLineup, orderedPlayers, parseLineup, serializeLineup } from "./veteran-kadro";
+import { checkLineup, orderedPlayers, parseLineup, serializeLineup, shirtNumber } from "./veteran-kadro";
 
 // Karabük Akademi Veteranlar için İlk 11.
 // Arka planlar hazır tasarımdan, soldaki liste silinerek alınmıştır; "İLK 11" başlığı görselin içindedir.
@@ -40,6 +40,7 @@ const DEFAULT_LINEUP = serializeLineup({
   starters: ["1", "21", "6", "67", "14", "65", "7", "61", "9", "18", "54"],
   subs: ["41", "25", "4", "10", "89", "99", "77"],
   captain: "61",
+  numbers: {},
 });
 
 /** Metni yatayda daraltarak (ve gerekirse maxWidth'e sığdırarak) çizer; çizilen genişliği döner. */
@@ -114,15 +115,15 @@ export const veteranIlk11: ImageTemplate = {
     // İlk 11 kaleci en üstte, diğerleri forma numarasına göre; yedekler de aynı sırayla
     const lineup = parseLineup(v.kadro);
     const captain = lineup.captain;
-    orderedPlayers(lineup.starters).slice(0, 11).forEach((player, i) => {
+    orderedPlayers(lineup.starters, lineup.numbers).slice(0, 11).forEach((player, i) => {
       const baseline = ROWS.baseline + i * ROWS.pitch;
-      const number = player.numara;
+      const number = shirtNumber(player, lineup.numbers);
       const name = upper(player.ad);
       ctx.fillStyle = NAVY;
       if (number) drawNarrow(ctx, number, ROWS.numCenterX, baseline - (ROWS.nameCap - ROWS.numCap) / 2, ROWS.numCap, squeeze, "center");
       if (!name) return;
 
-      const isCaptain = !!captain && number === captain;
+      const isCaptain = !!captain && player.numara === captain;
       const maxWidth = ROWS.nameMaxRight - ROWS.nameX - (isCaptain ? BADGE.gap + BADGE.w : 0);
       ctx.fillStyle = BLUE;
       const width = drawNarrow(ctx, name, ROWS.nameX, baseline, ROWS.nameCap, squeeze, "left", maxWidth);

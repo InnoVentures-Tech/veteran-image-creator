@@ -575,12 +575,35 @@ textarea:focus {
   background: var(--bg);
 }
 .lineup-row .no {
-  width: 26px;
+  width: 34px;
   flex-shrink: 0;
-  text-align: right;
+  text-align: center;
   font-size: 12px;
   font-weight: 800;
   color: var(--muted);
+}
+/* Genel input kuralını (width: 100%) geçmesi için seçici daha belirgin */
+.lineup .lineup-row input.no-input {
+  width: 34px;
+  height: 26px;
+  flex-shrink: 0;
+  padding: 0 2px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  text-align: center;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--navy);
+}
+/* Öneriler yazarken açılır; tarayıcının öneri oku dar kutuda numaranın üstüne biniyor */
+.lineup-row input.no-input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+.lineup .lineup-row input.no-input:focus {
+  outline: 2px solid var(--blue-soft);
+  border-color: var(--blue);
 }
 .lineup-row .name {
   display: flex;

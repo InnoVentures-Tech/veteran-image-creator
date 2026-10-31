@@ -11,13 +11,14 @@ import {
   orderedPlayers,
   parseLineup,
   serializeLineup,
+  shirtNumber,
   type VeteranLineup,
   type VeteranPlayer,
 } from "./studio/veteran-kadro";
 
 export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => {
   const lineup = parseLineup(value);
-  const { starters, subs, captain } = lineup;
+  const { starters, subs, captain, numbers } = lineup;
   const save = (next: Partial<VeteranLineup>) => onChange(serializeLineup({ ...lineup, ...next }));
   // Oyuncu listesi kapatılabilir (kadro kurulduktan sonra form kısalsın)
   const [listOpen, setListOpen] = useState(true);
@@ -27,6 +28,21 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
   const keeperInXI = starters.some((n) => ROSTER.find((p) => p.numara === n)?.kaleci);
   const youthInXI = starters.filter((n) => ROSTER.find((p) => p.numara === n)?.genc).length;
   const checks = checkLineup(lineup);
+
+  /** Oyuncu ilk 11'den çıkınca elle girilmiş forma numarası da silinir */
+  const withoutNumber = (id: string) => Object.fromEntries(Object.entries(numbers).filter(([k]) => k !== id));
+  const setNumber = (p: VeteranPlayer, raw: string) => {
+    const n = raw.replace(/\D/g, "").slice(0, 2);
+    save({ numbers: n && n !== p.numara ? { ...numbers, [p.numara]: n } : withoutNumber(p.numara) });
+  };
+  /** Forma numarası önerileri: kadrodaki numarası önce, sonra ilk 11'de başkasının kullanmadığı numaralar */
+  const numberSuggestions = (p: VeteranPlayer) => {
+    const taken = new Set(
+      orderedPlayers(starters.filter((n) => n !== p.numara), numbers).map((o) => shirtNumber(o, numbers)),
+    );
+    const free = Array.from({ length: 99 }, (_, i) => String(i + 1)).filter((n) => n !== p.numara && !taken.has(n));
+    return [p.numara, ...free];
+  };
 
   /** Oyuncuyu ilk 11'e / yedeklere eklemenin önündeki engel (yoksa null) */
   const starterBlock = (p: VeteranPlayer) => {
@@ -39,7 +55,11 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
 
   const toggleStarter = (p: VeteranPlayer) => {
     if (starterSet.has(p.numara)) {
-      save({ starters: starters.filter((n) => n !== p.numara), captain: captain === p.numara ? "" : captain });
+      save({
+        starters: starters.filter((n) => n !== p.numara),
+        captain: captain === p.numara ? "" : captain,
+        numbers: withoutNumber(p.numara),
+      });
       return;
     }
     if (starterBlock(p)) return;
@@ -55,6 +75,7 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
       subs: [...subs, p.numara],
       starters: starters.filter((n) => n !== p.numara),
       captain: captain === p.numara ? "" : captain,
+      numbers: withoutNumber(p.numara),
     });
   };
 
@@ -83,7 +104,31 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
             const benchBlock = onBench ? null : subBlock();
             return (
               <div key={p.numara} className={`lineup-row${inXI ? " xi" : onBench ? " bench" : ""}`}>
-                <span className="no">{p.numara}</span>
+                {inXI ? (
+                  <>
+                    <input
+                      className="no-input"
+                      inputMode="numeric"
+                      maxLength={2}
+                      value={numbers[p.numara] ?? p.numara}
+                      onChange={(e) => setNumber(p, e.target.value)}
+                      onBlur={(e) => !e.target.value && setNumber(p, "")}
+                      // Tıklayınca numara seçili kalsın: yeni numara eskisinin üzerine yazılır (en fazla 2 hane)
+                      onFocus={(e) => e.target.select()}
+                      onMouseUp={(e) => e.preventDefault()}
+                      list={`shirt-numbers-${p.numara}`}
+                      aria-label={`${p.ad} forma numarası`}
+                      title="Forma numarası (bu maç için değiştirilebilir)"
+                    />
+                    <datalist id={`shirt-numbers-${p.numara}`}>
+                      {numberSuggestions(p).map((n) => (
+                        <option key={n} value={n} label={n === p.numara ? "Kadrodaki numarası" : undefined} />
+                      ))}
+                    </datalist>
+                  </>
+                ) : (
+                  <span className="no">{p.numara}</span>
+                )}
                 <span className="name">
                   {p.ad}
                   {p.kaleci && <span className="badge">Kaleci</span>}
@@ -122,7 +167,7 @@ export const VeteranLineupEditor = ({ value, onChange }: { value: string; onChan
           disabled={!starters.length}
           options={[
             { value: "", label: starters.length ? "Kaptan seçin" : "Önce ilk 11'i seçin" },
-            ...orderedPlayers(starters).map((p) => ({ value: p.numara, label: `${p.numara} · ${p.ad}` })),
+            ...orderedPlayers(starters, numbers).map((p) => ({ value: p.numara, label: `${shirtNumber(p, numbers)} · ${p.ad}` })),
           ]}
         />
         <span className="hint">Adının yanına “C” eklenir.</span>

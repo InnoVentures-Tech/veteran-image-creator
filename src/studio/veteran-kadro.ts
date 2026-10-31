@@ -60,11 +60,13 @@ export const playersByName = (value: string | undefined) =>
     return player ? [player] : [];
   });
 
-/** İlk 11 düzenleyicisinin değeri: forma numaraları ve kaptanın numarası */
+/** İlk 11 düzenleyicisinin değeri: kadro numaraları (oyuncu kimliği), kaptanın kadro numarası ve elle değiştirilen forma numaraları */
 export interface VeteranLineup {
   starters: string[];
   subs: string[];
   captain: string;
+  /** Kadro numarası -> bu maçta giydiği forma numarası (kadrodakiyle aynıysa tutulmaz) */
+  numbers: Record<string, string>;
 }
 
 export const MAX_STARTERS = 11;
@@ -77,22 +79,36 @@ export const parseLineup = (value: string | undefined): VeteranLineup => {
   try {
     const parsed = JSON.parse(value || "{}") as Partial<VeteranLineup>;
     const list = (v: unknown) => (Array.isArray(v) ? v.map(String) : []);
-    return { starters: list(parsed.starters), subs: list(parsed.subs), captain: String(parsed.captain ?? "") };
+    const numbers = Object.fromEntries(
+      Object.entries(parsed.numbers && typeof parsed.numbers === "object" ? parsed.numbers : {}).map(([k, n]) => [k, String(n)]),
+    );
+    return { starters: list(parsed.starters), subs: list(parsed.subs), captain: String(parsed.captain ?? ""), numbers };
   } catch {
-    return { starters: [], subs: [], captain: "" };
+    return { starters: [], subs: [], captain: "", numbers: {} };
   }
 };
 
+/** Oyuncunun bu maçtaki forma numarası: elle girilmişse o, yoksa kadrodaki */
+export const shirtNumber = (player: VeteranPlayer, numbers: Record<string, string> = {}) =>
+  numbers[player.numara]?.trim() || player.numara;
+
 export const serializeLineup = (lineup: VeteranLineup) => JSON.stringify(lineup);
 
-/** Numaralardaki kadro oyuncuları: kaleci önce, sonra forma numarasına göre; kadroda olmayanlar atlanır */
-export const orderedPlayers = (numbers: string[]) =>
-  numbers
+/**
+ * Numaralardaki kadro oyuncuları: kaleci önce, sonra (elle girilenler dahil) forma numarasına göre;
+ * kadroda olmayanlar atlanır
+ */
+export const orderedPlayers = (ids: string[], numbers: Record<string, string> = {}) =>
+  ids
     .flatMap((n) => {
       const player = findPlayer(n);
       return player ? [player] : [];
     })
-    .sort((a, b) => Number(!!b.kaleci) - Number(!!a.kaleci) || Number(a.numara) - Number(b.numara));
+    .sort(
+      (a, b) =>
+        Number(!!b.kaleci) - Number(!!a.kaleci) ||
+        Number(shirtNumber(a, numbers)) - Number(shirtNumber(b, numbers)),
+    );
 
 export interface RuleCheck {
   label: string;
@@ -104,6 +120,8 @@ export interface RuleCheck {
 export const checkLineup = (lineup: VeteranLineup): RuleCheck[] => {
   const starters = orderedPlayers(lineup.starters);
   const subs = orderedPlayers(lineup.subs);
+  const shirts = starters.map((p) => shirtNumber(p, lineup.numbers));
+  const dupes = [...new Set(shirts.filter((n, i) => shirts.indexOf(n) !== i))];
   const keepers = starters.filter((p) => p.kaleci).length;
   const youth = starters.filter((p) => p.genc);
   const hasCaptain = starters.some((p) => p.numara === lineup.captain);
@@ -118,6 +136,11 @@ export const checkLineup = (lineup: VeteranLineup): RuleCheck[] => {
       label: `İlk 11'de en fazla ${MAX_YOUTH_STARTERS} genç`,
       ok: youth.length <= MAX_YOUTH_STARTERS,
       detail: youth.length ? `${youth.length} genç (${youth.map((p) => p.ad).join(", ")})` : "Genç yok",
+    },
+    {
+      label: "Forma numaraları farklı",
+      ok: !dupes.length,
+      detail: dupes.length ? `Aynı numara: ${dupes.join(", ")}` : "Her oyuncunun numarası farklı",
     },
     { label: "Kaptan seçildi", ok: hasCaptain, detail: hasCaptain ? "İlk 11'den" : "İlk 11'den bir kaptan seçin" },
     { label: `Yedekler en fazla ${MAX_SUBS} kişi`, ok: subs.length <= MAX_SUBS, detail: `${subs.length}/${MAX_SUBS} oyuncu` },
