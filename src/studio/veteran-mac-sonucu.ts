@@ -16,7 +16,7 @@ const TILE_PAD = 12;
 const SCORE = { cap: 145 };
 const RESULT = { baseline: 1577, cap: 74, maxWidth: 600 };
 /** Gol atanlar logoların altında: solda ev sahibi (sağa hizalı), sağda deplasman (sola hizalı); top ilk satırın taban çizgisi */
-const SCORERS = { top: 1883, bottom: 1975, step: 54, cap: 32, leftX: 568, rightX: 1045, maxWidth: 380 };
+const SCORERS = { top: 1895, bottom: 1982, step: 60, cap: 44, leftX: 568, rightX: 1045, maxWidth: 380 };
 /** Tasarımdaki başlık ve gol yazıları Barlow Condensed'den dar: yatayda bu oranda daraltılır */
 const SQUEEZE = 0.68;
 
@@ -169,7 +169,7 @@ export const veteranMacSonucu: ImageTemplate = {
     // Gol çoksa satırlar sıklaşır ve birlikte küçülür
     const most = Math.max(1, ...columns.map((c) => c.goals.length));
     const step = Math.min(SCORERS.step, (SCORERS.bottom - SCORERS.top) / Math.max(1, most - 1));
-    const cap = Math.min(SCORERS.cap, step * 0.58);
+    const cap = Math.min(SCORERS.cap, step * 0.72);
     for (const { goals, x, align } of columns)
       goals.forEach((g, i) => {
         const name = upper(g.oyuncu.trim());
