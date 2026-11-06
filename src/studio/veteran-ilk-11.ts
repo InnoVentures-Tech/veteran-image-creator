@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT as H, CANVAS_WIDTH as W, FONTS, drawCover, upper, sizeForCap, type ImageTemplate } from "./engine";
 import { checkLineup, orderedPlayers, parseLineup, serializeLineup, shirtNumber } from "./veteran-kadro";
 
-// Karabük Akademi Veteranlar için İlk 11.
+// Karabük Akademi Veteranlar için İlk 11 - Oyunculu (sağda oyuncu fotoğrafı, solda numaralı liste).
 // Arka planlar hazır tasarımdan, soldaki liste silinerek alınmıştır; "İLK 11" başlığı görselin içindedir.
 // Ölçüler ve renkler o tasarımdan (1600x2000) ölçülmüştür.
 
@@ -36,7 +36,7 @@ const SUBS_TITLE = { x: 62, baseline: 1738, cap: 52 };
 const SUBS = { x: 63, baseline: 1802, pitch: 63, cap: 43, maxWidth: 482, maxLines: 3 };
 
 /** Varsayılan ilk 11, yedekler ve kaptan: kadrodaki (veteran-kadro.ts) forma numaraları */
-const DEFAULT_LINEUP = serializeLineup({
+export const DEFAULT_LINEUP = serializeLineup({
   starters: ["1", "21", "6", "67", "14", "65", "7", "61", "9", "18", "54"],
   subs: ["41", "25", "4", "10", "89", "99", "77"],
   captain: "61",
@@ -89,8 +89,9 @@ const subLines = (ctx: CanvasRenderingContext2D, names: string[], maxWidth: numb
 };
 
 export const veteranIlk11: ImageTemplate = {
+  // id değişmez: tarayıcıda kayıtlı kadro ve arka plan seçimi korunur
   id: "veteran-ilk-11",
-  name: "İlk 11",
+  name: "İlk 11 - Oyunculu",
   description: "Karabük Akademi Veteranlar ilk 11'i; oyuncular, kaptan ve yedekler kadrodan seçilir.",
   dynamicImages: ({ values }) => ({ background: bgSrc(values.arkaPlan || BACKGROUNDS[0].value) }),
   fields: [

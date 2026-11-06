@@ -33,7 +33,7 @@ export const ROSTER: VeteranPlayer[] = [
   { numara: "25", ad: "Ali Topçu" },
   { numara: "27", ad: "Okan" },
   { numara: "33", ad: "Ali Türk" },
-  { numara: "34", ad: "Murat L.", kaleci: true },
+  { numara: "34", ad: "Murat L." },
   { numara: "35", ad: "Alper" },
   { numara: "41", ad: "Emrah", kaleci: true },
   { numara: "53", ad: "Şahin" },
