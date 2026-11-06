@@ -10,15 +10,22 @@ import { LOGO_STYLES, OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-log
 const NUMBER_BLUE = "#4F95EE";
 const GK_GRAY = "#A9B1BD";
 
-/** Arka plan seçenekleri: yeni oyuncu fotoğrafı geldiğinde buraya eklenir */
-const BACKGROUNDS = [
+/**
+ * Arka plan seçenekleri: yeni oyuncu fotoğrafı geldiğinde buraya eklenir.
+ * `file` verilirse o dosya kullanılır (images/<file>); verilmezse veteran-kamp-<value>.webp.
+ * Forma seçeneklerinde forma büyük, sol kenardan taşar; yakası logoların altında, sağ kolu KAMP yazısının hizasında biter.
+ * İkisi de boş zemine (veteran-kamp-zemin.webp) dekupe forma aynı ölçüde yerleştirilerek üretilmiştir.
+ */
+const BACKGROUNDS: { value: string; label: string; file?: string }[] = [
+  { value: "lacivert", label: "Lacivert Forma", file: "veteran-kamp-lacivert.jpg" },
+  { value: "beyaz", label: "Beyaz Forma", file: "veteran-kamp-beyaz.jpg" },
   { value: "aydin", label: "Aydın - Mavi Forma" },
   { value: "alper", label: "Alper - Mavi Forma" },
   { value: "huseyin", label: "Hüseyin - Beyaz Forma" },
   { value: "emrullah", label: "Emrullah - Mavi Forma" },
   { value: "ilker", label: "İlker - Mavi Forma" },
 ];
-const bgSrc = (key: string) => `/images/veteran-kamp-${key}.webp`;
+const bgSrc = (key: string) => `/images/${BACKGROUNDS.find((b) => b.value === key)?.file ?? `veteran-kamp-${key}.webp`}`;
 
 /**
  * Logolar sol üstteki köşe çizgilerinin (x 92–272, y 190–529) içinde: üstte ev sahibi, altta misafir.
