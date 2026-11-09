@@ -7,7 +7,7 @@ import { OPPONENTS, VENUES, homeAway, logoSrc } from "./veteran-logos";
 // oyuncu adları, altta teknik direktör. Yerleşim 1080x1350 örnek tasarımdan ölçülüp 1600x2000'e (x1.4815) taşınmıştır.
 
 /** Arka planlar public/images/bg/<n>.jpeg (1, 2, 3 …); yeni görsel eklendiğinde sayı artırılır */
-const BACKGROUND_COUNT = 9;
+const BACKGROUND_COUNT = 10;
 const BACKGROUNDS = Array.from({ length: BACKGROUND_COUNT }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }));
 const bgSrc = (n: string) => `/images/bg/${n}.jpeg`;
 
