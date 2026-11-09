@@ -15,8 +15,13 @@ const TILES = [
 const TILE_PAD = 12;
 const SCORE = { cap: 145 };
 const RESULT = { baseline: 1577, cap: 74, maxWidth: 600 };
-/** Gol atanlar logoların altında: solda ev sahibi (sağa hizalı), sağda deplasman (sola hizalı); top ilk satırın taban çizgisi */
-const SCORERS = { top: 1895, bottom: 1982, step: 60, cap: 44, leftX: 568, rightX: 1045, maxWidth: 380 };
+/**
+ * Gol atanlar logoların altında: solda ev sahibi (sağa hizalı), sağda deplasman (sola hizalı); her oyuncu tek satır.
+ * Punto sabittir: dakikalar uzadıkça satır ortadan dışa doğru uzar. top ilk satırın taban çizgisi; satır sayısı
+ * lastBaseline'a sığmayacak kadar artarsa skor bölümü (başlık, kutu, logolar) satırlarla birlikte yukarı kayar.
+ */
+const SCORERS = { top: 1895, lastBaseline: 1958, step: 58, cap: 38, leftX: 572, rightX: 1028, maxWidth: 540 };
+const SCORER_SQUEEZE = 0.82;
 /** Tasarımdaki başlık ve gol yazıları Barlow Condensed'den dar: yatayda bu oranda daraltılır */
 const SQUEEZE = 0.68;
 
@@ -65,11 +70,23 @@ const minuteText = (value: string | undefined) => {
   return m ? `${m}’` : "";
 };
 
-/** Dakikaya göre sıralı gol satırları ("45+2" 45 sayılır) */
-const goalsOf = (rows: Row[], side: string) =>
+const minuteValue = (value: string | undefined) => parseInt(value ?? "", 10) || 0;
+
+/** Bir takımın golleri oyuncuya göre toplanır ("SERHAN": 7’, 46’, 51’); oyuncular ilk gol dakikasına göre sıralı ("45+2" 45 sayılır) */
+const scorersOf = (rows: Row[], side: string) => {
+  const byName = new Map<string, string[]>();
   rows
     .filter((r) => r.takim === side && (r.oyuncu ?? "").trim())
-    .sort((a, b) => (parseInt(a.dakika, 10) || 0) - (parseInt(b.dakika, 10) || 0));
+    .sort((a, b) => minuteValue(a.dakika) - minuteValue(b.dakika))
+    .forEach((r) => {
+      const name = upper(r.oyuncu.trim().replace(/\s+/g, " "));
+      const minutes = byName.get(name) ?? [];
+      const minute = minuteText(r.dakika);
+      if (minute) minutes.push(minute);
+      byName.set(name, minutes);
+    });
+  return [...byName].map(([name, minutes]) => ({ name, minutes: minutes.join(", ") }));
+};
 
 export const veteranMacSonucu: ImageTemplate = {
   id: "veteran-mac-sonucu",
@@ -127,9 +144,19 @@ export const veteranMacSonucu: ImageTemplate = {
       ctx.fillStyle = "#2B3A4F";
       ctx.fillRect(0, 0, W, H);
     }
+    const rows = lists.goller ?? [];
+    const [homeSide, awaySide] = v.evDeplasman === "away" ? ["rakip", "biz"] : ["biz", "rakip"];
+    const columns = [
+      { scorers: scorersOf(rows, homeSide), x: SCORERS.leftX, align: "right" as const },
+      { scorers: scorersOf(rows, awaySide), x: SCORERS.rightX, align: "left" as const },
+    ];
+    // Satırlar alta sığmazsa gol listesi ve üstündeki skor bölümü birlikte yukarı kayar
+    const lines = Math.max(1, ...columns.map((c) => c.scorers.length));
+    const shift = Math.max(0, SCORERS.top + (lines - 1) * SCORERS.step - SCORERS.lastBaseline);
+
     // Üstte başlık, altta skor ve gol atanlar okunsun diye fotoğraf iki uçtan koyulaşır
     verticalShade(ctx, [[0, "rgba(0,0,0,0.6)"], [1, "rgba(0,0,0,0)"]], 0, 320);
-    verticalShade(ctx, [[0, "rgba(0,0,0,0)"], [0.4, "rgba(0,0,0,0.55)"], [1, "rgba(0,0,0,0.95)"]], 1000, H - 1000);
+    verticalShade(ctx, [[0, "rgba(0,0,0,0)"], [0.4, "rgba(0,0,0,0.55)"], [1, "rgba(0,0,0,0.95)"]], 1000 - shift, H - 1000 + shift);
 
     ctx.fillStyle = "#FFFFFF";
     const week = (v.hafta ?? "").trim();
@@ -137,17 +164,19 @@ export const veteranMacSonucu: ImageTemplate = {
     if (title) drawFitted(ctx, upper(title), W / 2, TITLE.baseline, condensed, TITLE.cap, TITLE.maxWidth, "center", SQUEEZE);
 
     for (const tile of TILES) {
+      const y = tile.y - shift;
       ctx.fillStyle = "#FFFFFF";
-      ctx.fillRect(tile.x, tile.y, tile.w, tile.h);
+      ctx.fillRect(tile.x, y, tile.w, tile.h);
       const logo = statics[tile.key];
-      if (logo) drawContain(ctx, logo, tile.x + TILE_PAD, tile.y + TILE_PAD, tile.w - TILE_PAD * 2, tile.h - TILE_PAD * 2);
+      if (logo) drawContain(ctx, logo, tile.x + TILE_PAD, y + TILE_PAD, tile.w - TILE_PAD * 2, tile.h - TILE_PAD * 2);
     }
 
-    const box = ctx.createLinearGradient(0, BOX.y, 0, BOX.y + BOX.h);
+    const boxY = BOX.y - shift;
+    const box = ctx.createLinearGradient(0, boxY, 0, boxY + BOX.h);
     box.addColorStop(0, "#1238A8");
     box.addColorStop(1, "#0A1B66");
     ctx.fillStyle = box;
-    ctx.fillRect(BOX.x, BOX.y, BOX.w, BOX.h);
+    ctx.fillRect(BOX.x, boxY, BOX.w, BOX.h);
 
     ctx.fillStyle = "#FFFFFF";
     const score = `${(v.evSkor ?? "").trim() || "0"}-${(v.depSkor ?? "").trim() || "0"}`;
@@ -155,27 +184,17 @@ export const veteranMacSonucu: ImageTemplate = {
     ctx.font = scoreFont(scoreSize);
     const glyph = ctx.measureText(score);
     // Rakamların görünen yüksekliğine göre kutuda dikey ortalanır
-    const scoreBaseline = BOX.y + BOX.h / 2 + (glyph.actualBoundingBoxAscent - glyph.actualBoundingBoxDescent) / 2;
+    const scoreBaseline = boxY + BOX.h / 2 + (glyph.actualBoundingBoxAscent - glyph.actualBoundingBoxDescent) / 2;
     drawFitted(ctx, score, BOX.x + BOX.w / 2, scoreBaseline, scoreFont, SCORE.cap, BOX.w - 40, "center");
 
-    drawFitted(ctx, "MAÇ SONUCU", W / 2, RESULT.baseline, condensed, RESULT.cap, RESULT.maxWidth, "center", SQUEEZE);
+    drawFitted(ctx, "MAÇ SONUCU", W / 2, RESULT.baseline - shift, condensed, RESULT.cap, RESULT.maxWidth, "center", SQUEEZE);
 
-    const rows = lists.goller ?? [];
-    const [homeSide, awaySide] = v.evDeplasman === "away" ? ["rakip", "biz"] : ["biz", "rakip"];
-    const columns = [
-      { goals: goalsOf(rows, homeSide), x: SCORERS.leftX, align: "right" as const },
-      { goals: goalsOf(rows, awaySide), x: SCORERS.rightX, align: "left" as const },
-    ];
-    // Gol çoksa satırlar sıklaşır ve birlikte küçülür
-    const most = Math.max(1, ...columns.map((c) => c.goals.length));
-    const step = Math.min(SCORERS.step, (SCORERS.bottom - SCORERS.top) / Math.max(1, most - 1));
-    const cap = Math.min(SCORERS.cap, step * 0.72);
-    for (const { goals, x, align } of columns)
-      goals.forEach((g, i) => {
-        const name = upper(g.oyuncu.trim());
-        const minute = minuteText(g.dakika);
-        const text = !minute ? name : align === "right" ? `${name}  ${minute}` : `${minute}  ${name}`;
-        drawFitted(ctx, text, x, SCORERS.top + i * step, condensed, cap, SCORERS.maxWidth, align, SQUEEZE);
+    // Punto sabit: ev sahibi satırı sola, deplasman satırı sağa doğru uzar; yalnızca kenara taşacaksa daralır
+    const top = SCORERS.top - shift;
+    for (const { scorers, x, align } of columns)
+      scorers.forEach(({ name, minutes }, i) => {
+        const text = !minutes ? name : align === "right" ? `${name}  ${minutes}` : `${minutes}  ${name}`;
+        drawFitted(ctx, text, x, top + i * SCORERS.step, condensed, SCORERS.cap, SCORERS.maxWidth, align, SCORER_SQUEEZE);
       });
   },
 };
